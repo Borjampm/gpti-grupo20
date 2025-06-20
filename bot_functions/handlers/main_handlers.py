@@ -8,6 +8,19 @@ from ..state_manager import (
     AWAITING_ZIP_TO_EXTRACT, AWAITING_ZIP_TO_LIST, AWAITING_ZIP_FOR_ADD,
     AWAITING_ZIP_FOR_REMOVE, AWAITING_ZIP_FOR_BULK, AWAITING_GEMINI_PROMPT
 )
+from ..gemini_client import generate_text
+import os
+import re
+
+SYSTEM_PROMPT_FILE = "system_prompt.txt"
+
+def get_system_prompt():
+    """Reads the system prompt from the file."""
+    try:
+        with open(SYSTEM_PROMPT_FILE, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return ""
 
 async def handle_option_selection(update: Update, user_message: str, chat_id: int):
     """Handle when user is selecting an option"""
@@ -17,6 +30,10 @@ async def handle_option_selection(update: Update, user_message: str, chat_id: in
         await update.message.reply_text("Por favor, envía solo el número de la opción deseada.")
         return
 
+    await execute_action(update, chat_id, option)
+
+async def execute_action(update: Update, chat_id: int, option: int):
+    """Execute the specified action"""
     if option == 1:
         set_user_state(chat_id, AWAITING_FIRST_PDF, selected_option=1)
         await update.message.reply_text("📄 **Concatenar dos PDFs**\n\nEnvíame el primer archivo PDF.")
@@ -78,8 +95,46 @@ async def handle_option_selection(update: Update, user_message: str, chat_id: in
         set_user_state(chat_id, AWAITING_GEMINI_PROMPT, selected_option=18)
         await update.message.reply_text("✨ **Hablar con un LLM (Gemini)**\n\nEnvíame tu pregunta o prompt.")
     else:
-        await update.message.reply_text("Opción no válida. Por favor, elige un número del 1 al 18.")
+        await update.message.reply_text("Opción no válida. Por favor, elige un número del 1 al 18 o usa /manual para ver todas las opciones.")
+
+async def handle_intent_classification(update: Update, chat_id: int):
+    """Handle intent classification using LLM for IDLE state"""
+    user_prompt = update.message.text
+
+    # Get system prompt template
+    system_prompt_template = get_system_prompt()
+    if not system_prompt_template:
+        await update.message.reply_text("No se pudo cargar el sistema de clasificación. Usa /manual para seleccionar una acción.")
+        return
+
+    # Construct the full prompt for intent classification
+    full_prompt = system_prompt_template.replace("<Petición libre del usuario>", user_prompt)
+
+    try:
+        # Get LLM response
+        await update.message.reply_text("🤖 Analizando tu solicitud...")
+        response_text = await generate_text(full_prompt)
+
+        # Check if response contains "Acción: X" pattern
+        action_match = re.search(r"Acción:\s*(\d+)", response_text)
+
+        if action_match:
+            action_number = int(action_match.group(1))
+            if 1 <= action_number <= 18:
+                # Execute the identified action
+                await execute_action(update, chat_id, action_number)
+                return
+            else:
+                await update.message.reply_text(f"Número de acción inválido: {action_number}. Usa /manual para ver las opciones disponibles.")
+                return
+
+        # If no clear action identified, continue conversation
+        await update.message.reply_text(response_text)
+
+    except Exception as e:
+        print(f"Error in intent classification: {e}")
+        await update.message.reply_text("Hubo un error procesando tu solicitud. Usa /manual para seleccionar una acción manualmente.")
 
 async def handle_idle_state(update: Update, chat_id: int):
-    """Handle when user is in idle state"""
-    await update.message.reply_text("Escribe /help para ver las opciones disponibles.")
+    """Handle when user is in idle state - now uses intent classification"""
+    await handle_intent_classification(update, chat_id)

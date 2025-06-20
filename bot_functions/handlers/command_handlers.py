@@ -6,7 +6,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /start command - welcome user and set state to IDLE"""
     chat_id = update.message.chat_id
     set_user_state(chat_id, IDLE)
-    await update.message.reply_text("¡Hola! Bienvenido al bot. Escribe /help para comenzar.")
+    await update.message.reply_text(
+        "¡Hola! 👋 Bienvenido al bot de procesamiento de archivos.\n\n"
+        "🤖 **Simplemente describe lo que quieres hacer** y yo entenderé tu solicitud:\n"
+        "• \"Quiero unir dos PDFs\"\n"
+        "• \"Convierte esta imagen a PNG\"\n"
+        "• \"Extrae las páginas 2-5 de un PDF\"\n\n"
+        "📋 O usa **/manual** para ver todas las opciones numeradas.\n"
+        "ℹ️ Usa **/help** para ver la lista completa de funciones disponibles."
+    )
 
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /help command - show menu and set state to AWAITING_OPTION"""
@@ -53,6 +61,37 @@ async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• Tamaño máximo por archivo: 20 MB\n"
         "• Formatos soportados: PDF, PNG, JPEG, SVG, ZIP\n\n"
         "Escribe /help para ver todas las opciones disponibles."
+    )
+
+async def manual(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /manual command - allows direct action selection"""
+    chat_id = update.message.chat_id
+    set_user_state(chat_id, AWAITING_OPTION)
+    await update.message.reply_text(
+        "🔧 **Modo Manual**\n\n"
+        "Envía directamente el número de la acción que deseas realizar (1-18):\n\n"
+        "**📄 Operaciones con PDF:**\n"
+        "1. Concatenar dos archivos PDF\n"
+        "2. Concatenar múltiples archivos PDF\n"
+        "3. Eliminar páginas específicas de un PDF\n"
+        "4. Extraer páginas específicas de un PDF\n"
+        "5. Reordenar páginas de un PDF\n\n"
+        "**🖼️ Conversiones de imagen:**\n"
+        "6. JPEG → PNG\n"
+        "7. PNG → JPEG\n"
+        "8. PDF → PNG (primera página)\n"
+        "9. PDF → PNG (todas las páginas)\n"
+        "10. SVG → PNG\n"
+        "11. SVG → JPEG\n\n"
+        "**🗜️ Operaciones con ZIP:**\n"
+        "12. Crear ZIP con varios archivos\n"
+        "13. Extraer archivos de un ZIP\n"
+        "14. Listar contenidos de un ZIP\n"
+        "15. Agregar archivos a un ZIP existente\n"
+        "16. Eliminar archivos de un ZIP\n"
+        "17. Operaciones en masa dentro de un ZIP\n\n"
+        "**✨ Inteligencia Artificial:**\n"
+        "18. Hablar con un LLM (Gemini)\n"
     )
 
 
