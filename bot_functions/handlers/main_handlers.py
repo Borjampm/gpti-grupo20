@@ -6,7 +6,7 @@ from ..state_manager import (
     AWAITING_PDF_TO_PNG_FIRST, AWAITING_PDF_TO_PNG_ALL, AWAITING_SVG_TO_PNG,
     AWAITING_SVG_TO_JPEG, AWAITING_MULTIPLE_FILES_FOR_ZIP,
     AWAITING_ZIP_TO_EXTRACT, AWAITING_ZIP_TO_LIST, AWAITING_ZIP_FOR_ADD,
-    AWAITING_ZIP_FOR_REMOVE, AWAITING_ZIP_FOR_BULK
+    AWAITING_ZIP_FOR_REMOVE, AWAITING_ZIP_FOR_BULK, AWAITING_GEMINI_PROMPT
 )
 
 async def handle_option_selection(update: Update, user_message: str, chat_id: int):
@@ -74,8 +74,11 @@ async def handle_option_selection(update: Update, user_message: str, chat_id: in
     elif option == 17:
         set_user_state(chat_id, AWAITING_ZIP_FOR_BULK, selected_option=17)
         await update.message.reply_text("🗜️ **Operaciones en masa dentro de ZIP**\n\nEnvíame el archivo ZIP en el cual quieres realizar operaciones en masa.")
+    elif option == 18:
+        set_user_state(chat_id, AWAITING_GEMINI_PROMPT, selected_option=18)
+        await update.message.reply_text("✨ **Hablar con un LLM (Gemini)**\n\nEnvíame tu pregunta o prompt.")
     else:
-        await update.message.reply_text("Opción no válida. Por favor, elige un número del 1 al 17.")
+        await update.message.reply_text("Opción no válida. Por favor, elige un número del 1 al 18.")
 
 async def handle_idle_state(update: Update, chat_id: int):
     """Handle when user is in idle state"""

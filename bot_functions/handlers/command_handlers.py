@@ -33,7 +33,9 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "14. Listar contenidos de un ZIP\n"
         "15. Agregar archivos a un ZIP existente\n"
         "16. Eliminar archivos de un ZIP\n"
-        "17. Operaciones en masa dentro de un ZIP"
+        "17. Operaciones en masa dentro de un ZIP\n\n"
+        "**✨ Inteligencia Artificial:**\n"
+        "18. Hablar con un LLM (Gemini)\n"
     )
 
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
