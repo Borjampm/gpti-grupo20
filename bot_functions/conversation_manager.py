@@ -11,6 +11,7 @@ import re
 import zipfile
 import shutil
 import random
+from .ad_messages import mensajes_promocionales
 
 # Global instance to manage conversation states
 conversation_state = {}
@@ -49,17 +50,7 @@ AWAITING_PDF_CONCATENATION_ORDER = "AWAITING_PDF_CONCATENATION_ORDER"
 # File size limit (20 MB)
 MAX_FILE_SIZE = 20 * 1024 * 1024
 
-# Advertising messages
-ADVERTISING_MESSAGES = [
-    "💡 **¿Sabías que...?** Puedes procesar múltiples archivos de diferentes tipos en una sola sesión. ¡Prueba todas nuestras funciones!",
-    "🚀 **Tip profesional:** Nuestro bot puede manejar archivos de hasta 20MB. ¡Perfecto para documentos de trabajo!",
-    "⭐ **¡Novedad!** Ahora puedes realizar operaciones en masa dentro de archivos ZIP. ¡Descubre todas las opciones en el menú!",
-    "🎯 **Optimiza tu flujo de trabajo:** Combina PDFs, convierte imágenes y gestiona ZIPs, todo en un solo lugar.",
-    "📚 **¿Necesitas ayuda?** Escribe /help en cualquier momento para ver todas las opciones disponibles.",
-    "🔥 **¡Increíble!** Más de 17 operaciones diferentes para tus archivos. ¡Explora todas las posibilidades!",
-    "⚡ **Velocidad y calidad:** Procesamiento rápido con resultados de alta calidad para todos tus documentos.",
-    "🌟 **Bot gratuito:** Todas estas funciones están disponibles sin costo. ¡Comparte con tus amigos!"
-]
+# Advertising messages are imported from ad_messages.py
 
 def get_user_state(chat_id):
     """Get the current state of a user"""
@@ -1788,7 +1779,7 @@ async def send_processing_and_ad_message(update: Update, processing_message: str
     await asyncio.sleep(delay_seconds)
 
     # Send random advertising message
-    ad_message = random.choice(ADVERTISING_MESSAGES)
+    ad_message = random.choice(mensajes_promocionales)
     await update.message.reply_text(ad_message)
 
 
