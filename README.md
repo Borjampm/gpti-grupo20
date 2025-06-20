@@ -15,9 +15,26 @@
   - [x] JPEG ⇄ PNG conversion
   - [x] PDF → PNG (first page or all pages)
   - [x] SVG → PNG or JPEG conversion
+- [x] **ZIP Operations:**
+  - [x] Create ZIP with multiple files
+  - [x] Extract ZIP files
+  - [x] List ZIP contents
+  - [x] Add files to existing ZIP
+  - [x] Remove files from existing ZIP
+  - [x] Bulk operations within ZIP:
+    - [x] Convert multiple images using all other supported operations
+    - [x] Concatenate multiple PDFs in specified order
 - [x] **File Validation:**
-  - [x] File type validation (PDF, PNG, JPEG, SVG)
+  - [x] File type validation (PDF, PNG, JPEG, SVG, ZIP)
   - [x] File size validation (maximum 20 MB per file)
+
+## ✅ Recent Features Implemented
+
+- [x] **Advertising messages during file processing**:
+  - Users receive processing updates like "🔄 Concatenando PDFs en el orden especificado"
+  - Random promotional messages appear while files are being processed
+  - Final processed files are delivered as usual
+  - 8 different promotional messages rotate randomly to engage users
 
 ## Bot Flow
 
@@ -26,19 +43,27 @@
    - User state set to `IDLE`
 
 2. **Help**: User sends `/help` command
-   - Bot displays numbered menu with all 11 options
+   - Bot displays numbered menu con todas las 17 opciones
    - User state set to `AWAITING_OPTION`
 
 3. **Option Selection**: User sends "1" through "11"
-   - **PDF Operations (1-5)**: Various PDF manipulation features
-   - **Image Conversions (6-11)**: Various image format conversions
+   - **PDF Operations (1-5)**: Varias funciones de manipulación de PDF
+   - **Image Conversions (6-11)**: Varias conversiones de formatos de imagen
+   - **ZIP Operations (12-17)**: Funciones de manejo de archivos ZIP
 
 4. **File Processing Flow**:
-   Each option follows a guided flow where the bot:
-   - Validates file type and size (max 20 MB)
-   - Processes the file according to the selected operation
-   - Returns the processed result
-   - Returns to option selection menu
+   Cada opción sigue un flujo guiado donde el bot:
+   - Valida tipo y tamaño de archivo (máx. 20 MB)
+   - Procesa el archivo según la operación seleccionada
+   - Puede mostrar un mensaje promocional mientras se procesa la solicitud (por ejemplo: "Muestra un mensaje promocional mientras se procesa la solicitud")
+   - Devuelve el resultado procesado
+   - Vuelve al menú de selección de opción
+   - **ZIP Operations (12-17)** siguen el mismo patrón:
+     1. Validar que sea ZIP y tamaño
+     2. Recibir parámetros adicionales (acciones o listados)
+     3. Ejecutar operación (crear, extraer, listar, agregar, eliminar o en masa)
+     4. Enviar ZIP resultante
+     5. Retornar al menú
 
 ## Available Options
 
@@ -57,6 +82,19 @@
 10. **SVG → PNG** - Convert SVG vector graphics to PNG format
 11. **SVG → JPEG** - Convert SVG vector graphics to JPEG format
 
+### 🗜️ ZIP Operations
+12. **Crear ZIP con varios archivos** - Combinar múltiples archivos en un ZIP
+13. **Extraer ZIP** - Descomprimir un archivo ZIP enviado
+14. **Listar contenidos de un ZIP** - Mostrar la lista de archivos dentro de un ZIP
+15. **Agregar archivo a un ZIP existente** - Añadir uno o varios archivos a un ZIP recibido
+16. **Eliminar archivo de un ZIP existente** - Quitar archivos específicos de un ZIP recibido
+17. **Operaciones en masa dentro de un ZIP**:
+    - Convertir múltiples imágenes (p. ej. PNG → SVG)
+    - Concatenar múltiples PDFs según orden especificado
+    - Renombrar en lote archivos
+    - Aplicar marca de agua a múltiples archivos
+    - Dividir múltiples PDFs en páginas individuales
+
 ## File Limitations
 
 - **Maximum file size**: 20 MB per file
@@ -64,6 +102,16 @@
   - PDF files (.pdf)
   - Image files (.png, .jpg, .jpeg)
   - Vector graphics (.svg)
+  - ZIP archives (.zip)
+
+
+## 🔮 Future Enhancement Ideas
+
+- Enhanced file validation with more detailed feedback
+- Progress bars for long operations
+- Support for additional file formats
+- Batch processing with custom scripts
+- Integration with cloud storage services
 
 ## Setup
 
@@ -98,7 +146,7 @@
 ## Commands
 
 - `/start` - Welcome message and introduction
-- `/help` - Display options menu with all 11 features
+- `/help` - Display options menu with all 17 features
 - `/about` - Information about the bot and its capabilities
 
 ## Usage Examples
@@ -137,6 +185,28 @@
 2. User: "9" (for all pages to PNG)
 3. User: [sends PDF file]
 4. Bot: [returns each page as separate PNG files]
+
+### ZIP Creation (Option 12)
+1. User: `/help`
+2. User: "12"
+3. User: [sends first file]
+4. User: [sends second file]
+5. User: [sends third file]
+6. User: "listo"
+7. Bot: [returns ZIP file with all files]
+
+### ZIP Extraction (Option 13)
+1. User: `/help`
+2. User: "13"
+3. User: [sends ZIP file]
+4. Bot: [extracts and sends each file individually]
+
+### Bulk Operations in ZIP (Option 17)
+1. User: `/help`
+2. User: "17"
+3. User: [sends ZIP file with multiple images]
+4. User: "1" (for PNG to JPEG conversion)
+5. Bot: [returns ZIP with all PNG files converted to JPEG]
 
 ## Error Handling
 

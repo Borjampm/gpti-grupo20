@@ -26,21 +26,30 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "8. PDF → PNG (primera página)\n"
         "9. PDF → PNG (todas las páginas)\n"
         "10. SVG → PNG\n"
-        "11. SVG → JPEG"
+        "11. SVG → JPEG\n\n"
+        "**🗜️ Operaciones con ZIP:**\n"
+        "12. Crear ZIP con varios archivos\n"
+        "13. Extraer archivos de un ZIP\n"
+        "14. Listar contenidos de un ZIP\n"
+        "15. Agregar archivos a un ZIP existente\n"
+        "16. Eliminar archivos de un ZIP\n"
+        "17. Operaciones en masa dentro de un ZIP"
     )
 
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /about command"""
     await update.message.reply_text(
         "🤖 **Bot de Procesamiento de Archivos**\n\n"
-        "Soy un bot que puede procesar archivos PDF e imágenes de diferentes maneras:\n"
+        "Soy un bot que puede procesar archivos PDF, imágenes y ZIP de diferentes maneras:\n"
         "• Combinar y manipular archivos PDF\n"
         "• Convertir entre formatos de imagen\n"
         "• Extraer imágenes desde PDFs\n"
-        "• Convertir archivos SVG\n\n"
+        "• Convertir archivos SVG\n"
+        "• Crear y gestionar archivos ZIP\n"
+        "• Realizar operaciones en masa dentro de ZIP\n\n"
         "**Límites:**\n"
         "• Tamaño máximo por archivo: 20 MB\n"
-        "• Formatos soportados: PDF, PNG, JPEG, SVG\n\n"
+        "• Formatos soportados: PDF, PNG, JPEG, SVG, ZIP\n\n"
         "Escribe /help para ver todas las opciones disponibles."
     )
 
