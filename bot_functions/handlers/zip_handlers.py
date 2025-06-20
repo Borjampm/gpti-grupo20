@@ -6,7 +6,7 @@ from telegram import Update
 from ..state_manager import (
     set_user_state, get_user_data, clear_user_data,
     AWAITING_OPTION, AWAITING_MULTIPLE_FILES_FOR_ZIP, AWAITING_FILES_TO_ADD,
-    AWAITING_FILENAMES_TO_REMOVE, AWAITING_BULK_OPERATION, AWAITING_PDF_CONCATENATION_ORDER
+    AWAITING_FILENAMES_TO_REMOVE, AWAITING_BULK_OPERATION, AWAITING_PDF_CONCATENATION_ORDER, IDLE
 )
 from ..utils import validate_file, send_processing_and_ad_message, filter_valid_files
 from ..file_processing.zip_processor import (
@@ -45,8 +45,8 @@ async def handle_multiple_files_for_zip(update: Update, chat_id: int):
                 os.remove(file_path)
 
         clear_user_data(chat_id)
-        set_user_state(chat_id, AWAITING_OPTION)
-        await update.message.reply_text("Puedes elegir otra opción o escribir /help para ver el menú.")
+        set_user_state(chat_id, IDLE)
+        await update.message.reply_text("¿En qué más puedo ayudarte?")
         return
 
     if not update.message.document:
@@ -120,12 +120,12 @@ async def handle_zip_extraction(update: Update, chat_id: int):
 
         os.remove(zip_path)
         shutil.rmtree(extract_dir)
-        set_user_state(chat_id, AWAITING_OPTION)
-        await update.message.reply_text("Puedes elegir otra opción o escribir /help para ver el menú.")
+        set_user_state(chat_id, IDLE)
+        await update.message.reply_text("¿En qué más puedo ayudarte?")
 
     except Exception as e:
         await update.message.reply_text(f"❌ Error al extraer el ZIP: {str(e)}")
-        set_user_state(chat_id, AWAITING_OPTION)
+        set_user_state(chat_id, IDLE)
 
 async def handle_zip_listing(update: Update, chat_id: int):
     """Handle ZIP file content listing"""
@@ -161,12 +161,12 @@ async def handle_zip_listing(update: Update, chat_id: int):
         await update.message.reply_text(content_text)
 
         os.remove(zip_path)
-        set_user_state(chat_id, AWAITING_OPTION)
-        await update.message.reply_text("Puedes elegir otra opción o escribir /help para ver el menú.")
+        set_user_state(chat_id, IDLE)
+        await update.message.reply_text("¿En qué más puedo ayudarte?")
 
     except Exception as e:
         await update.message.reply_text(f"❌ Error al listar el contenido del ZIP: {str(e)}")
-        set_user_state(chat_id, AWAITING_OPTION)
+        set_user_state(chat_id, IDLE)
 
 async def handle_zip_for_add(update: Update, chat_id: int):
     """Handle ZIP file for adding files"""
@@ -196,7 +196,7 @@ async def handle_zip_for_add(update: Update, chat_id: int):
 
     except Exception as e:
         await update.message.reply_text(f"❌ Error al procesar el ZIP: {str(e)}")
-        set_user_state(chat_id, AWAITING_OPTION)
+        set_user_state(chat_id, IDLE)
 
 async def handle_files_to_add(update: Update, chat_id: int):
     """Handle files to add to existing ZIP"""
@@ -232,8 +232,8 @@ async def handle_files_to_add(update: Update, chat_id: int):
                 os.remove(file_path)
 
         clear_user_data(chat_id)
-        set_user_state(chat_id, AWAITING_OPTION)
-        await update.message.reply_text("Puedes elegir otra opción o escribir /help para ver el menú.")
+        set_user_state(chat_id, IDLE)
+        await update.message.reply_text("¿En qué más puedo ayudarte?")
         return
 
     if not update.message.document:
@@ -284,7 +284,7 @@ async def handle_zip_for_remove(update: Update, chat_id: int):
         if not current_files:
             await update.message.reply_text("❌ El ZIP está vacío.")
             os.remove(zip_path)
-            set_user_state(chat_id, AWAITING_OPTION)
+            set_user_state(chat_id, IDLE)
             return
 
         files_list = "\n".join([f"{i+1}. {file}" for i, file in enumerate(current_files)])
@@ -298,7 +298,7 @@ async def handle_zip_for_remove(update: Update, chat_id: int):
 
     except Exception as e:
         await update.message.reply_text(f"❌ Error al procesar el ZIP: {str(e)}")
-        set_user_state(chat_id, AWAITING_OPTION)
+        set_user_state(chat_id, IDLE)
 
 async def handle_filenames_to_remove(update: Update, chat_id: int):
     """Handle filenames to remove from ZIP"""
@@ -346,12 +346,12 @@ async def handle_filenames_to_remove(update: Update, chat_id: int):
             os.remove(zip_path)
 
         clear_user_data(chat_id)
-        set_user_state(chat_id, AWAITING_OPTION)
-        await update.message.reply_text("Puedes elegir otra opción o escribir /help para ver el menú.")
+        set_user_state(chat_id, IDLE)
+        await update.message.reply_text("¿En qué más puedo ayudarte?")
 
     except Exception as e:
         await update.message.reply_text(f"❌ Error al eliminar archivos: {str(e)}")
-        set_user_state(chat_id, AWAITING_OPTION)
+        set_user_state(chat_id, IDLE)
 
 async def handle_zip_for_bulk(update: Update, chat_id: int):
     """Handle ZIP file for bulk operations"""
@@ -375,7 +375,7 @@ async def handle_zip_for_bulk(update: Update, chat_id: int):
         if not current_files:
             await update.message.reply_text("❌ El ZIP no contiene archivos válidos.")
             os.remove(zip_path)
-            set_user_state(chat_id, AWAITING_OPTION)
+            set_user_state(chat_id, IDLE)
             return
 
         pdf_files = [f for f in current_files if f.lower().endswith('.pdf')]
@@ -404,7 +404,7 @@ async def handle_zip_for_bulk(update: Update, chat_id: int):
 
     except Exception as e:
         await update.message.reply_text(f"❌ Error al procesar el ZIP: {str(e)}")
-        set_user_state(chat_id, AWAITING_OPTION)
+        set_user_state(chat_id, IDLE)
 
 async def handle_bulk_operation(update: Update, chat_id: int):
     """Handle bulk operation selection and execution"""
@@ -461,9 +461,9 @@ async def handle_bulk_operation(update: Update, chat_id: int):
             os.remove(zip_path)
 
         clear_user_data(chat_id)
-        set_user_state(chat_id, AWAITING_OPTION)
-        await update.message.reply_text("Puedes elegir otra opción o escribir /help para ver el menú.")
+        set_user_state(chat_id, IDLE)
+        await update.message.reply_text("¿En qué más puedo ayudarte?")
 
     except Exception as e:
         await update.message.reply_text(f"❌ Error en la operación: {str(e)}")
-        set_user_state(chat_id, AWAITING_OPTION)
+        set_user_state(chat_id, IDLE)

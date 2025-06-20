@@ -2,7 +2,7 @@ import os
 import tempfile
 from telegram import Update
 from PyPDF2 import PdfReader
-from ..state_manager import set_user_state, get_user_data, clear_user_data, AWAITING_SECOND_PDF, AWAITING_MULTIPLE_PDFS, AWAITING_PAGE_NUMBERS_DELETE, AWAITING_PAGE_NUMBERS_EXTRACT, AWAITING_PAGE_ORDER, AWAITING_OPTION, AWAITING_PDF_CONCATENATION_ORDER
+from ..state_manager import set_user_state, get_user_data, clear_user_data, AWAITING_SECOND_PDF, AWAITING_MULTIPLE_PDFS, AWAITING_PAGE_NUMBERS_DELETE, AWAITING_PAGE_NUMBERS_EXTRACT, AWAITING_PAGE_ORDER, AWAITING_OPTION, AWAITING_PDF_CONCATENATION_ORDER, IDLE
 from ..utils import validate_file, send_processing_and_ad_message, parse_page_numbers
 from ..file_processing.pdf_processor import (
     concatenate_two_pdfs, concatenate_multiple_pdfs, delete_pdf_pages,
@@ -90,13 +90,13 @@ async def handle_second_pdf_upload(update: Update, chat_id: int):
         # Clean up
         os.remove(second_pdf_path)
         clear_user_data(chat_id)
-        set_user_state(chat_id, AWAITING_OPTION)
-        await update.message.reply_text("Puedes elegir otra opción o escribir /help para ver el menú.")
+        set_user_state(chat_id, IDLE)
+        await update.message.reply_text("¿En qué más puedo ayudarte?")
 
     except Exception as e:
         await update.message.reply_text(f"Error al procesar el archivo: {str(e)}")
         clear_user_data(chat_id)
-        set_user_state(chat_id, AWAITING_OPTION)
+        set_user_state(chat_id, IDLE)
 
 async def handle_multiple_pdfs_upload(update: Update, chat_id: int):
     """Handle multiple PDF uploads for concatenation"""
@@ -122,8 +122,8 @@ async def handle_multiple_pdfs_upload(update: Update, chat_id: int):
             await update.message.reply_text("❌ Error al concatenar los PDFs.")
 
         clear_user_data(chat_id)
-        set_user_state(chat_id, AWAITING_OPTION)
-        await update.message.reply_text("Puedes elegir otra opción o escribir /help para ver el menú.")
+        set_user_state(chat_id, IDLE)
+        await update.message.reply_text("¿En qué más puedo ayudarte?")
         return
 
     is_valid, message = await validate_file(update, ['pdf'])
@@ -247,15 +247,15 @@ async def handle_page_numbers_delete(update: Update, chat_id: int):
             await update.message.reply_text("❌ Error al eliminar las páginas.")
 
         clear_user_data(chat_id)
-        set_user_state(chat_id, AWAITING_OPTION)
-        await update.message.reply_text("Puedes elegir otra opción o escribir /help para ver el menú.")
+        set_user_state(chat_id, IDLE)
+        await update.message.reply_text("¿En qué más puedo ayudarte?")
 
     except ValueError as e:
         await update.message.reply_text(f"Error en el formato de páginas: {str(e)}")
     except Exception as e:
         await update.message.reply_text(f"Error al procesar: {str(e)}")
         clear_user_data(chat_id)
-        set_user_state(chat_id, AWAITING_OPTION)
+        set_user_state(chat_id, IDLE)
 
 async def handle_page_numbers_extract(update: Update, chat_id: int):
     """Handle page number specification for extraction"""
@@ -285,15 +285,15 @@ async def handle_page_numbers_extract(update: Update, chat_id: int):
             await update.message.reply_text("❌ Error al extraer las páginas.")
 
         clear_user_data(chat_id)
-        set_user_state(chat_id, AWAITING_OPTION)
-        await update.message.reply_text("Puedes elegir otra opción o escribir /help para ver el menú.")
+        set_user_state(chat_id, IDLE)
+        await update.message.reply_text("¿En qué más puedo ayudarte?")
 
     except ValueError as e:
         await update.message.reply_text(f"Error en el formato de páginas: {str(e)}")
     except Exception as e:
         await update.message.reply_text(f"Error al procesar: {str(e)}")
         clear_user_data(chat_id)
-        set_user_state(chat_id, AWAITING_OPTION)
+        set_user_state(chat_id, IDLE)
 
 async def handle_page_order(update: Update, chat_id: int):
     """Handle page order specification for reordering"""
@@ -330,15 +330,15 @@ async def handle_page_order(update: Update, chat_id: int):
             await update.message.reply_text("❌ Error al reordenar las páginas.")
 
         clear_user_data(chat_id)
-        set_user_state(chat_id, AWAITING_OPTION)
-        await update.message.reply_text("Puedes elegir otra opción o escribir /help para ver el menú.")
+        set_user_state(chat_id, IDLE)
+        await update.message.reply_text("¿En qué más puedo ayudarte?")
 
     except ValueError:
         await update.message.reply_text("Por favor, usa solo números separados por comas (ej: 3,1,2,4).")
     except Exception as e:
         await update.message.reply_text(f"Error al procesar: {str(e)}")
         clear_user_data(chat_id)
-        set_user_state(chat_id, AWAITING_OPTION)
+        set_user_state(chat_id, IDLE)
 
 async def handle_pdf_concatenation_order(update: Update, chat_id: int):
     """Handle PDF concatenation order specification in bulk operations"""
@@ -410,9 +410,9 @@ async def handle_pdf_concatenation_order(update: Update, chat_id: int):
             os.remove(zip_path)
 
         clear_user_data(chat_id)
-        set_user_state(chat_id, AWAITING_OPTION)
-        await update.message.reply_text("Puedes elegir otra opción o escribir /help para ver el menú.")
+        set_user_state(chat_id, IDLE)
+        await update.message.reply_text("¿En qué más puedo ayudarte?")
 
     except Exception as e:
         await update.message.reply_text(f"❌ Error al procesar el orden: {str(e)}")
-        set_user_state(chat_id, AWAITING_OPTION)
+        set_user_state(chat_id, IDLE)

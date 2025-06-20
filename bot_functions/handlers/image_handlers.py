@@ -1,7 +1,7 @@
 import os
 import tempfile
 from telegram import Update
-from ..state_manager import set_user_state, AWAITING_OPTION
+from ..state_manager import set_user_state, AWAITING_OPTION, IDLE
 from ..utils import validate_file, send_processing_and_ad_message
 from ..file_processing.image_processor import (
     jpeg_to_png, png_to_jpeg, pdf_to_png, svg_to_png, svg_to_jpeg
@@ -35,12 +35,12 @@ async def handle_jpeg_to_png(update: Update, chat_id: int):
 
         os.remove(input_path)
         os.remove(output_path)
-        set_user_state(chat_id, AWAITING_OPTION)
-        await update.message.reply_text("Puedes elegir otra opción o escribir /help para ver el menú.")
+        set_user_state(chat_id, IDLE)
+        await update.message.reply_text("¿En qué más puedo ayudarte?")
 
     except Exception as e:
         await update.message.reply_text(f"Error al convertir la imagen: {str(e)}")
-        set_user_state(chat_id, AWAITING_OPTION)
+        set_user_state(chat_id, IDLE)
 
 async def handle_png_to_jpeg(update: Update, chat_id: int):
     """Handle PNG to JPEG conversion"""
@@ -70,12 +70,12 @@ async def handle_png_to_jpeg(update: Update, chat_id: int):
 
         os.remove(input_path)
         os.remove(output_path)
-        set_user_state(chat_id, AWAITING_OPTION)
-        await update.message.reply_text("Puedes elegir otra opción o escribir /help para ver el menú.")
+        set_user_state(chat_id, IDLE)
+        await update.message.reply_text("¿En qué más puedo ayudarte?")
 
     except Exception as e:
         await update.message.reply_text(f"Error al convertir la imagen: {str(e)}")
-        set_user_state(chat_id, AWAITING_OPTION)
+        set_user_state(chat_id, IDLE)
 
 async def handle_pdf_to_png(update: Update, chat_id: int, first_page_only: bool):
     """Handle PDF to PNG conversion"""
@@ -120,12 +120,12 @@ async def handle_pdf_to_png(update: Update, chat_id: int, first_page_only: bool)
                 os.remove(output_path)
 
         os.remove(input_path)
-        set_user_state(chat_id, AWAITING_OPTION)
-        await update.message.reply_text("Puedes elegir otra opción o escribir /help para ver el menú.")
+        set_user_state(chat_id, IDLE)
+        await update.message.reply_text("¿En qué más puedo ayudarte?")
 
     except Exception as e:
         await update.message.reply_text(f"Error al convertir PDF: {str(e)}")
-        set_user_state(chat_id, AWAITING_OPTION)
+        set_user_state(chat_id, IDLE)
 
 async def handle_svg_conversion(update: Update, chat_id: int, output_format: str):
     """Handle SVG to PNG/JPEG conversion"""
@@ -160,9 +160,9 @@ async def handle_svg_conversion(update: Update, chat_id: int, output_format: str
 
         os.remove(input_path)
         os.remove(output_path)
-        set_user_state(chat_id, AWAITING_OPTION)
-        await update.message.reply_text("Puedes elegir otra opción o escribir /help para ver el menú.")
+        set_user_state(chat_id, IDLE)
+        await update.message.reply_text("¿En qué más puedo ayudarte?")
 
     except Exception as e:
         await update.message.reply_text(f"Error al convertir SVG: {str(e)}")
-        set_user_state(chat_id, AWAITING_OPTION)
+        set_user_state(chat_id, IDLE)
