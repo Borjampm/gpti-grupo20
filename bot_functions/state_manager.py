@@ -34,8 +34,7 @@ AWAITING_ZIP_FOR_BULK = "AWAITING_ZIP_FOR_BULK"
 AWAITING_BULK_OPERATION = "AWAITING_BULK_OPERATION"
 AWAITING_PDF_CONCATENATION_ORDER = "AWAITING_PDF_CONCATENATION_ORDER"
 
-# Gemini operation states
-AWAITING_GEMINI_PROMPT = "AWAITING_GEMINI_PROMPT"
+# Gemini operation states - removed, LLM only used for intent classification
 
 def get_user_state(chat_id):
     """Get the current state of a user"""

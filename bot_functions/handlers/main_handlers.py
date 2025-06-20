@@ -6,16 +6,16 @@ from ..state_manager import (
     AWAITING_PDF_TO_PNG_FIRST, AWAITING_PDF_TO_PNG_ALL, AWAITING_SVG_TO_PNG,
     AWAITING_SVG_TO_JPEG, AWAITING_MULTIPLE_FILES_FOR_ZIP,
     AWAITING_ZIP_TO_EXTRACT, AWAITING_ZIP_TO_LIST, AWAITING_ZIP_FOR_ADD,
-    AWAITING_ZIP_FOR_REMOVE, AWAITING_ZIP_FOR_BULK, AWAITING_GEMINI_PROMPT
+    AWAITING_ZIP_FOR_REMOVE, AWAITING_ZIP_FOR_BULK
 )
 from ..gemini_client import generate_text
 import os
 import re
 
-SYSTEM_PROMPT_FILE = "system_prompt.txt"
+SYSTEM_PROMPT_FILE = "prompts/system_prompt.txt"
 
 def get_system_prompt():
-    """Reads the system prompt from the file."""
+    """Reads the system prompt from the file for intent classification."""
     try:
         with open(SYSTEM_PROMPT_FILE, "r", encoding="utf-8") as f:
             return f.read()
@@ -91,11 +91,8 @@ async def execute_action(update: Update, chat_id: int, option: int):
     elif option == 17:
         set_user_state(chat_id, AWAITING_ZIP_FOR_BULK, selected_option=17)
         await update.message.reply_text("🗜️ **Operaciones en masa dentro de ZIP**\n\nEnvíame el archivo ZIP en el cual quieres realizar operaciones en masa.")
-    elif option == 18:
-        set_user_state(chat_id, AWAITING_GEMINI_PROMPT, selected_option=18)
-        await update.message.reply_text("✨ **Hablar con un LLM (Gemini)**\n\nEnvíame tu pregunta o prompt.")
     else:
-        await update.message.reply_text("Opción no válida. Por favor, elige un número del 1 al 18 o usa /manual para ver todas las opciones.")
+        await update.message.reply_text("Opción no válida. Por favor, elige un número del 1 al 17 o usa /manual para ver todas las opciones.")
 
 async def handle_intent_classification(update: Update, chat_id: int):
     """Handle intent classification using LLM for IDLE state"""
@@ -111,7 +108,7 @@ async def handle_intent_classification(update: Update, chat_id: int):
     full_prompt = system_prompt_template.replace("<Petición libre del usuario>", user_prompt)
 
     try:
-        # Get LLM response
+        # Get LLM response for intent classification
         await update.message.reply_text("🤖 Analizando tu solicitud...")
         response_text = await generate_text(full_prompt)
 
@@ -120,7 +117,7 @@ async def handle_intent_classification(update: Update, chat_id: int):
 
         if action_match:
             action_number = int(action_match.group(1))
-            if 1 <= action_number <= 18:
+            if 1 <= action_number <= 17:
                 # Execute the identified action
                 await execute_action(update, chat_id, action_number)
                 return

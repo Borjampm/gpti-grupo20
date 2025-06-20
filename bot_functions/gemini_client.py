@@ -11,14 +11,20 @@ except KeyError:
     # Handle the case where the API key is not set
     client = None
 
-async def generate_text(prompt: str) -> str:
+async def generate_text(prompt: str, system_prompt: str = None) -> str:
     """Generate text using the Gemini model"""
     if not client:
         return "El servicio de Gemini no está configurado. Por favor, contacta al administrador del bot."
     try:
+        # If system_prompt is provided, combine it with the user prompt
+        if system_prompt:
+            full_prompt = f"{system_prompt}\n\nUsuario: {prompt}"
+        else:
+            full_prompt = prompt
+
         response = client.models.generate_content(
             model="gemma-3-27b-it",
-            contents=prompt
+            contents=full_prompt
         )
         return response.text
     except Exception as e:

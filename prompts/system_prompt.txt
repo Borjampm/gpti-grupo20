@@ -27,7 +27,7 @@ Acción: <número>
 donde `<número>` es la acción correcta entre 1 y 17.
 Si no encuentras una opción adecuada, responde:
 ```
-No encontré una opción válida. Por favor, inténtalo de nuevo o ingresa manualmente un número del 1 al 17.
+Creo que no entiendo muy bien lo que quieres hacer o esa acción no está disponible. Por favor, inténtalo de nuevo o utiliza el comando /manual para ver todas las opciones disponibles.
 ```
 <USER>
 Necesito unir estos dos PDF en uno solo.

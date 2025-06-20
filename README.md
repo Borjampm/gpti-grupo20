@@ -66,15 +66,15 @@
    - **PDF Operations (1-5)**: PDF manipulation functions
    - **Image Conversions (6-11)**: Various image format conversions
    - **ZIP Operations (12-17)**: ZIP file management functions
-   - **AI Chat (18)**: Direct conversation with LLM
+
 
 ### 🔧 Manual Mode (Alternative)
 
 1. **Manual Command**: User sends `/manual` command
-   - Bot displays numbered menu with all 18 options
+   - Bot displays numbered menu with all 17 options
    - User state set to `AWAITING_OPTION`
 
-2. **Direct Option Selection**: User sends "1" through "18"
+2. **Direct Option Selection**: User sends "1" through "17"
    - Immediately proceeds to selected action without LLM classification
    - Same file processing flow as before
 
@@ -117,10 +117,8 @@ Cada opción sigue un flujo guiado donde el bot:
     - Dividir múltiples PDFs en páginas individuales
 
 ### 🤖 AI-Powered Features
-18. **Conversación con LLM (Gemini)** - Chat directo con Gemma 3 27B Instruct
-    - **Intent Classification**: Automatically used to parse user requests in natural language
-    - **Direct Chat**: Available as option 18 for direct conversation with the AI
-    - **Conversational Flow**: Continues interaction until user intent is clearly determined
+- **Intent Classification**: Automatically used to parse user requests in natural language to determine appropriate actions (1-17)
+- **Conversational Flow**: Continues interaction until user intent is clearly determined
 
 ## File Limitations
 
@@ -174,7 +172,7 @@ Cada opción sigue un flujo guiado donde el bot:
 ## Commands
 
 - `/start` - Welcome message and introduction to natural language interaction
-- `/help` - Display options menu with all 18 features (now includes AI option 18)
+- `/help` - Display options menu with all 17 features
 - `/about` - Information about the bot and its capabilities
 - `/manual` - Access manual mode with numbered options for direct action selection
 

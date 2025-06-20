@@ -17,11 +17,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle /help command - show menu and set state to AWAITING_OPTION"""
+    """Handle /help command - show available functions list only"""
     chat_id = update.message.chat_id
-    set_user_state(chat_id, AWAITING_OPTION)
+    # Don't change state - keep it as informational only
     await update.message.reply_text(
-        "🤖 **Elige una opción escribiendo solo el número correspondiente:**\n\n"
+        "ℹ️ **Lista de funciones disponibles:**\n\n"
         "**📄 Operaciones con PDF:**\n"
         "1. Concatenar dos archivos PDF\n"
         "2. Concatenar múltiples archivos PDF\n"
@@ -42,8 +42,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "15. Agregar archivos a un ZIP existente\n"
         "16. Eliminar archivos de un ZIP\n"
         "17. Operaciones en masa dentro de un ZIP\n\n"
-        "**✨ Inteligencia Artificial:**\n"
-        "18. Hablar con un LLM (Gemini)\n"
+        "💡 **Para seleccionar directamente por número, usa /manual**"
     )
 
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -69,7 +68,7 @@ async def manual(update: Update, context: ContextTypes.DEFAULT_TYPE):
     set_user_state(chat_id, AWAITING_OPTION)
     await update.message.reply_text(
         "🔧 **Modo Manual**\n\n"
-        "Envía directamente el número de la acción que deseas realizar (1-18):\n\n"
+        "Envía directamente el número de la acción que deseas realizar (1-17):\n\n"
         "**📄 Operaciones con PDF:**\n"
         "1. Concatenar dos archivos PDF\n"
         "2. Concatenar múltiples archivos PDF\n"
@@ -89,9 +88,7 @@ async def manual(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "14. Listar contenidos de un ZIP\n"
         "15. Agregar archivos a un ZIP existente\n"
         "16. Eliminar archivos de un ZIP\n"
-        "17. Operaciones en masa dentro de un ZIP\n\n"
-        "**✨ Inteligencia Artificial:**\n"
-        "18. Hablar con un LLM (Gemini)\n"
+        "17. Operaciones en masa dentro de un ZIP\n"
     )
 
 
