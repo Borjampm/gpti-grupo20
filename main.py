@@ -3,7 +3,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, Con
 from dotenv import load_dotenv
 import os
 
-from bot_functions.handlers import start, about, help
+from bot_functions.handlers.command_handlers import start, about, help
 from bot_functions.conversation_manager import conversation_manager
 
 load_dotenv()

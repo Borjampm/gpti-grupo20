@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from .conversation_manager import set_user_state, IDLE, AWAITING_OPTION
+from ..state_manager import set_user_state, IDLE, AWAITING_OPTION
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /start command - welcome user and set state to IDLE"""
