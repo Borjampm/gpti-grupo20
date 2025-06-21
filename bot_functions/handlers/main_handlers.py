@@ -2,14 +2,13 @@ from telegram import Update
 from ..state_manager import (
     set_user_state, AWAITING_FIRST_PDF, AWAITING_MULTIPLE_PDFS,
     AWAITING_PDF_FOR_PAGE_DELETE, AWAITING_PDF_FOR_PAGE_EXTRACT,
-    AWAITING_PDF_FOR_REORDER, AWAITING_JPEG, AWAITING_PNG,
-    AWAITING_PDF_TO_PNG_FIRST, AWAITING_PDF_TO_PNG_ALL, AWAITING_SVG_TO_PNG,
-    AWAITING_SVG_TO_JPEG, AWAITING_MULTIPLE_FILES_FOR_ZIP,
+    AWAITING_PDF_FOR_REORDER, AWAITING_MULTIPLE_FILES_FOR_ZIP,
     AWAITING_ZIP_TO_EXTRACT, AWAITING_ZIP_TO_LIST, AWAITING_ZIP_FOR_ADD,
-    AWAITING_ZIP_FOR_REMOVE, AWAITING_ZIP_FOR_PNG_TO_JPEG, AWAITING_ZIP_FOR_JPEG_TO_PNG,
-    AWAITING_ZIP_FOR_SVG_TO_PNG, AWAITING_ZIP_FOR_SVG_TO_JPEG, AWAITING_ZIP_FOR_PDF_CONCATENATION
+    AWAITING_ZIP_FOR_REMOVE, AWAITING_ZIP_FOR_IMAGES_TO_PNG, AWAITING_ZIP_FOR_IMAGES_TO_JPEG,
+    AWAITING_ZIP_FOR_PDF_CONCATENATION, AWAITING_IMAGE_TO_PNG, AWAITING_IMAGE_TO_JPEG
 )
 from ..gemini_client import generate_text
+from ..utils import get_exit_info_message
 import os
 import re
 
@@ -24,127 +23,94 @@ def get_system_prompt():
         return ""
 
 async def handle_option_selection(update: Update, user_message: str, chat_id: int):
-    """Handle when user is selecting an option"""
-    try:
+    """Handle user option selection (either direct number or natural language)"""
+    if user_message.isdigit():
         option = int(user_message)
-    except ValueError:
-        await update.message.reply_text("Por favor, envía solo el número de la opción deseada.")
-        return
-
-    await execute_action(update, chat_id, option)
+        await execute_action(update, chat_id, option)
+    else:
+        await handle_intent_classification(update, chat_id)
 
 async def execute_action(update: Update, chat_id: int, option: int):
     """Execute the specified action"""
+    exit_info = get_exit_info_message()
+
     if option == 1:
         set_user_state(chat_id, AWAITING_FIRST_PDF, selected_option=1)
-        await update.message.reply_text("📄 **Concatenar dos PDFs**\n\nEnvíame el primer archivo PDF.")
+        await update.message.reply_text(f"📄 **Concatenar dos PDFs**\n\nEnvíame el primer archivo PDF.\n\n{exit_info}")
     elif option == 2:
         set_user_state(chat_id, AWAITING_MULTIPLE_PDFS, selected_option=2, pdf_paths=[])
         await update.message.reply_text(
-            "📄 **Concatenar múltiples PDFs**\n\n"
-            "Envíame los archivos PDF uno por uno. Cuando hayas enviado todos los archivos, escribe 'listo' para concatenarlos."
+            f"📄 **Concatenar múltiples PDFs**\n\n"
+            f"Envíame los archivos PDF uno por uno. Cuando hayas enviado todos los archivos, escribe 'listo' para concatenarlos.\n\n{exit_info}"
         )
     elif option == 3:
         set_user_state(chat_id, AWAITING_PDF_FOR_PAGE_DELETE, selected_option=3)
-        await update.message.reply_text("📄 **Eliminar páginas de PDF**\n\nEnvíame el archivo PDF del cual quieres eliminar páginas.")
+        await update.message.reply_text(f"📄 **Eliminar páginas de PDF**\n\nEnvíame el archivo PDF del cual quieres eliminar páginas.\n\n{exit_info}")
     elif option == 4:
         set_user_state(chat_id, AWAITING_PDF_FOR_PAGE_EXTRACT, selected_option=4)
-        await update.message.reply_text("📄 **Extraer páginas de PDF**\n\nEnvíame el archivo PDF del cual quieres extraer páginas.")
+        await update.message.reply_text(f"📄 **Extraer páginas de PDF**\n\nEnvíame el archivo PDF del cual quieres extraer páginas.\n\n{exit_info}")
     elif option == 5:
         set_user_state(chat_id, AWAITING_PDF_FOR_REORDER, selected_option=5)
-        await update.message.reply_text("📄 **Reordenar páginas de PDF**\n\nEnvíame el archivo PDF cuyas páginas quieres reordenar.")
+        await update.message.reply_text(f"📄 **Reordenar páginas de PDF**\n\nEnvíame el archivo PDF cuyas páginas quieres reordenar.\n\n{exit_info}")
     elif option == 6:
-        set_user_state(chat_id, AWAITING_JPEG, selected_option=6)
-        await update.message.reply_text("🖼️ **JPEG → PNG**\n\nEnvíame el archivo JPEG que quieres convertir a PNG.")
+        set_user_state(chat_id, AWAITING_MULTIPLE_FILES_FOR_ZIP, selected_option=6)
+        await update.message.reply_text(f"🗜️ **Crear ZIP con varios archivos**\n\nEnvíame los archivos que quieres incluir en el ZIP uno por uno. Cuando hayas enviado todos los archivos, escribe 'listo' para crear el ZIP.\n\n{exit_info}")
     elif option == 7:
-        set_user_state(chat_id, AWAITING_PNG, selected_option=7)
-        await update.message.reply_text("🖼️ **PNG → JPEG**\n\nEnvíame el archivo PNG que quieres convertir a JPEG.")
+        set_user_state(chat_id, AWAITING_ZIP_TO_EXTRACT, selected_option=7)
+        await update.message.reply_text(f"🗜️ **Extraer ZIP**\n\nEnvíame el archivo ZIP que quieres extraer.\n\n{exit_info}")
     elif option == 8:
-        set_user_state(chat_id, AWAITING_PDF_TO_PNG_FIRST, selected_option=8)
-        await update.message.reply_text("🖼️ **PDF → PNG (primera página)**\n\nEnvíame el archivo PDF del cual quieres extraer la primera página como PNG.")
+        set_user_state(chat_id, AWAITING_ZIP_TO_LIST, selected_option=8)
+        await update.message.reply_text(f"🗜️ **Listar contenidos de ZIP**\n\nEnvíame el archivo ZIP del cual quieres ver el contenido.\n\n{exit_info}")
     elif option == 9:
-        set_user_state(chat_id, AWAITING_PDF_TO_PNG_ALL, selected_option=9)
-        await update.message.reply_text("🖼️ **PDF → PNG (todas las páginas)**\n\nEnvíame el archivo PDF del cual quieres extraer todas las páginas como PNG.")
+        set_user_state(chat_id, AWAITING_ZIP_FOR_ADD, selected_option=9)
+        await update.message.reply_text(f"🗜️ **Agregar archivos a ZIP**\n\nPrimero envíame el archivo ZIP al cual quieres agregar archivos.\n\n{exit_info}")
     elif option == 10:
-        set_user_state(chat_id, AWAITING_SVG_TO_PNG, selected_option=10)
-        await update.message.reply_text("🖼️ **SVG → PNG**\n\nEnvíame el archivo SVG que quieres convertir a PNG.")
+        set_user_state(chat_id, AWAITING_ZIP_FOR_REMOVE, selected_option=10)
+        await update.message.reply_text(f"🗜️ **Eliminar archivos de ZIP**\n\nEnvíame el archivo ZIP del cual quieres eliminar archivos.\n\n{exit_info}")
     elif option == 11:
-        set_user_state(chat_id, AWAITING_SVG_TO_JPEG, selected_option=11)
-        await update.message.reply_text("🖼️ **SVG → JPEG**\n\nEnvíame el archivo SVG que quieres convertir a JPEG.")
+        set_user_state(chat_id, AWAITING_ZIP_FOR_IMAGES_TO_PNG, selected_option=11)
+        await update.message.reply_text(f"🗜️ **Convertir todas las imágenes a PNG dentro de un ZIP**\n\nEnvíame el archivo ZIP que contiene las imágenes que quieres convertir a PNG (detectaré automáticamente JPEG y SVG).\n\n{exit_info}")
     elif option == 12:
-        set_user_state(chat_id, AWAITING_MULTIPLE_FILES_FOR_ZIP, selected_option=12, file_paths=[])
-        await update.message.reply_text(
-            "🗜️ **Crear ZIP con varios archivos**\n\n"
-            "Envíame los archivos uno por uno. Cuando hayas enviado todos los archivos, escribe 'listo' para crear el ZIP."
-        )
+        set_user_state(chat_id, AWAITING_ZIP_FOR_IMAGES_TO_JPEG, selected_option=12)
+        await update.message.reply_text(f"🗜️ **Convertir todas las imágenes a JPEG dentro de un ZIP**\n\nEnvíame el archivo ZIP que contiene las imágenes que quieres convertir a JPEG (detectaré automáticamente PNG y SVG).\n\n{exit_info}")
     elif option == 13:
-        set_user_state(chat_id, AWAITING_ZIP_TO_EXTRACT, selected_option=13)
-        await update.message.reply_text("🗜️ **Extraer archivos de ZIP**\n\nEnvíame el archivo ZIP que quieres extraer.")
+        set_user_state(chat_id, AWAITING_ZIP_FOR_PDF_CONCATENATION, selected_option=13)
+        await update.message.reply_text(f"🗜️ **Concatenar todos los PDFs dentro de un ZIP**\n\nEnvíame el archivo ZIP que contiene los archivos PDF que quieres concatenar.\n\n{exit_info}")
     elif option == 14:
-        set_user_state(chat_id, AWAITING_ZIP_TO_LIST, selected_option=14)
-        await update.message.reply_text("🗜️ **Listar contenidos de ZIP**\n\nEnvíame el archivo ZIP del cual quieres ver el contenido.")
+        set_user_state(chat_id, AWAITING_IMAGE_TO_PNG, selected_option=14)
+        await update.message.reply_text(f"🖼️ **Imagen → PNG**\n\nEnvíame la imagen que quieres convertir a PNG (detectaré automáticamente el formato: JPEG, SVG, PDF).\n\n{exit_info}")
     elif option == 15:
-        set_user_state(chat_id, AWAITING_ZIP_FOR_ADD, selected_option=15)
-        await update.message.reply_text("🗜️ **Agregar archivos a ZIP**\n\nPrimero envíame el archivo ZIP al cual quieres agregar archivos.")
-    elif option == 16:
-        set_user_state(chat_id, AWAITING_ZIP_FOR_REMOVE, selected_option=16)
-        await update.message.reply_text("🗜️ **Eliminar archivos de ZIP**\n\nEnvíame el archivo ZIP del cual quieres eliminar archivos.")
-    elif option == 17:
-        set_user_state(chat_id, AWAITING_ZIP_FOR_PNG_TO_JPEG, selected_option=17)
-        await update.message.reply_text("🗜️ **Convertir todas las imágenes PNG a JPEG dentro de un ZIP**\n\nEnvíame el archivo ZIP que contiene las imágenes PNG que quieres convertir a JPEG.")
-    elif option == 18:
-        set_user_state(chat_id, AWAITING_ZIP_FOR_JPEG_TO_PNG, selected_option=18)
-        await update.message.reply_text("🗜️ **Convertir todas las imágenes JPEG a PNG dentro de un ZIP**\n\nEnvíame el archivo ZIP que contiene las imágenes JPEG que quieres convertir a PNG.")
-    elif option == 19:
-        set_user_state(chat_id, AWAITING_ZIP_FOR_SVG_TO_PNG, selected_option=19)
-        await update.message.reply_text("🗜️ **Convertir todos los archivos SVG a PNG dentro de un ZIP**\n\nEnvíame el archivo ZIP que contiene los archivos SVG que quieres convertir a PNG.")
-    elif option == 20:
-        set_user_state(chat_id, AWAITING_ZIP_FOR_SVG_TO_JPEG, selected_option=20)
-        await update.message.reply_text("🗜️ **Convertir todos los archivos SVG a JPEG dentro de un ZIP**\n\nEnvíame el archivo ZIP que contiene los archivos SVG que quieres convertir a JPEG.")
-    elif option == 21:
-        set_user_state(chat_id, AWAITING_ZIP_FOR_PDF_CONCATENATION, selected_option=21)
-        await update.message.reply_text("🗜️ **Concatenar todos los PDFs dentro de un ZIP**\n\nEnvíame el archivo ZIP que contiene los archivos PDF que quieres concatenar.")
+        set_user_state(chat_id, AWAITING_IMAGE_TO_JPEG, selected_option=15)
+        await update.message.reply_text(f"🖼️ **Imagen → JPEG**\n\nEnvíame la imagen que quieres convertir a JPEG (detectaré automáticamente el formato: PNG, SVG, PDF).\n\n{exit_info}")
     else:
-        await update.message.reply_text("Opción no válida. Por favor, elige un número del 1 al 21 o usa /manual para ver todas las opciones.")
+        await update.message.reply_text("Opción no válida. Por favor, elige un número del 1 al 15 o usa /manual para ver todas las opciones.")
 
 async def handle_intent_classification(update: Update, chat_id: int):
-    """Handle intent classification using LLM for IDLE state"""
-    user_prompt = update.message.text
+    """Use Gemini to classify user intent and execute corresponding action"""
+    user_message = update.message.text
+    system_prompt = get_system_prompt()
 
-    # Get system prompt template
-    system_prompt_template = get_system_prompt()
-    if not system_prompt_template:
-        await update.message.reply_text("No se pudo cargar el sistema de clasificación. Usa /manual para seleccionar una acción.")
-        return
-
-    # Construct the full prompt for intent classification
-    full_prompt = system_prompt_template.replace("<Petición libre del usuario>", user_prompt)
+    # Prepare the prompt for Gemini
+    prompt = f"{system_prompt}\n\n<USER>\n{user_message}\n\n<ASSISTANT>"
 
     try:
-        # Get LLM response for intent classification
-        await update.message.reply_text("🤖 Analizando tu solicitud...")
-        response_text = await generate_text(full_prompt)
+        response = await generate_text(prompt)
 
-        # Check if response contains "Acción: X" pattern
-        action_match = re.search(r"Acción:\s*(\d+)", response_text)
-
+        # Extract action number from response
+        action_match = re.search(r"Acción:\s*(\d+)", response)
         if action_match:
             action_number = int(action_match.group(1))
-            if 1 <= action_number <= 21:
+            if 1 <= action_number <= 15:
                 # Execute the identified action
                 await execute_action(update, chat_id, action_number)
-                return
             else:
-                await update.message.reply_text(f"Número de acción inválido: {action_number}. Usa /manual para ver las opciones disponibles.")
-                return
-
-        # If no clear action identified, continue conversation
-        await update.message.reply_text(response_text)
-
+                await update.message.reply_text("No pude identificar una acción válida. Usa /manual para ver todas las opciones disponibles.")
+        else:
+            # If no action number found, send the Gemini response as is
+            await update.message.reply_text(response)
     except Exception as e:
-        print(f"Error in intent classification: {e}")
-        await update.message.reply_text("Hubo un error procesando tu solicitud. Usa /manual para seleccionar una acción manualmente.")
+        await update.message.reply_text(f"Error al procesar tu solicitud. Intenta de nuevo o usa /manual para seleccionar directamente.")
 
 async def handle_idle_state(update: Update, chat_id: int):
-    """Handle when user is in idle state - now uses intent classification"""
+    """Handle messages when user is in idle state - use intent classification"""
     await handle_intent_classification(update, chat_id)

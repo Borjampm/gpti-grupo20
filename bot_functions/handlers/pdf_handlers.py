@@ -3,7 +3,7 @@ import tempfile
 from telegram import Update
 from PyPDF2 import PdfReader
 from ..state_manager import set_user_state, get_user_data, clear_user_data, AWAITING_SECOND_PDF, AWAITING_MULTIPLE_PDFS, AWAITING_PAGE_NUMBERS_DELETE, AWAITING_PAGE_NUMBERS_EXTRACT, AWAITING_PAGE_ORDER, AWAITING_OPTION, AWAITING_PDF_CONCATENATION_ORDER, IDLE
-from ..utils import validate_file, send_processing_and_ad_message, parse_page_numbers
+from ..utils import validate_file, send_processing_and_ad_message, parse_page_numbers, get_exit_info_message
 from ..file_processing.pdf_processor import (
     concatenate_two_pdfs, concatenate_multiple_pdfs, delete_pdf_pages,
     extract_pdf_pages, reorder_pdf_pages
@@ -35,9 +35,10 @@ async def handle_first_pdf_upload(update: Update, chat_id: int):
             return
 
         set_user_state(chat_id, AWAITING_SECOND_PDF, first_pdf_path=first_pdf_path)
+        exit_info = get_exit_info_message()
         await update.message.reply_text(
             f"✅ Primer PDF recibido: {file_name} ({page_count} páginas)\n"
-            "Ahora envíame el segundo archivo PDF."
+            f"Ahora envíame el segundo archivo PDF.\n\n{exit_info}"
         )
 
     except Exception as e:
@@ -153,10 +154,11 @@ async def handle_multiple_pdfs_upload(update: Update, chat_id: int):
         pdf_paths.append(pdf_path)
         set_user_state(chat_id, AWAITING_MULTIPLE_PDFS, pdf_paths=pdf_paths)
 
+        exit_info = get_exit_info_message()
         await update.message.reply_text(
             f"✅ PDF {len(pdf_paths)} recibido: {file_name} ({page_count} páginas)\n"
             f"Total de archivos: {len(pdf_paths)}\n\n"
-            "Envía otro PDF o escribe 'listo' para concatenar todos los archivos."
+            f"Envía otro PDF o escribe 'listo' para concatenar todos los archivos.\n\n{exit_info}"
         )
 
     except Exception as e:
@@ -187,6 +189,7 @@ async def handle_pdf_for_page_operation(update: Update, chat_id: int, operation:
             return
 
         set_user_state(chat_id, f"AWAITING_PAGE_NUMBERS_{operation.upper()}", pdf_path=pdf_path, page_count=page_count)
+        exit_info = get_exit_info_message()
 
         if operation == "delete":
             await update.message.reply_text(
@@ -195,7 +198,7 @@ async def handle_pdf_for_page_operation(update: Update, chat_id: int, operation:
                 f"• Números individuales: 1,3,5\n"
                 f"• Rangos: 1-3,5-7\n"
                 f"• Combinaciones: 1,3-5,8\n\n"
-                f"Páginas disponibles: 1-{page_count}"
+                f"Páginas disponibles: 1-{page_count}\n\n{exit_info}"
             )
         elif operation == "extract":
             await update.message.reply_text(
@@ -204,7 +207,7 @@ async def handle_pdf_for_page_operation(update: Update, chat_id: int, operation:
                 f"• Números individuales: 1,3,5\n"
                 f"• Rangos: 1-3,5-7\n"
                 f"• Combinaciones: 1,3-5,8\n\n"
-                f"Páginas disponibles: 1-{page_count}"
+                f"Páginas disponibles: 1-{page_count}\n\n{exit_info}"
             )
         elif operation == "reorder":
             set_user_state(chat_id, AWAITING_PAGE_ORDER, pdf_path=pdf_path, page_count=page_count)
@@ -213,7 +216,7 @@ async def handle_pdf_for_page_operation(update: Update, chat_id: int, operation:
                 f"Especifica el nuevo orden de las páginas separadas por comas.\n"
                 f"Por ejemplo: 3,1,2,4 (para poner la página 3 primero, luego 1, luego 2, luego 4)\n\n"
                 f"Páginas disponibles: 1-{page_count}\n"
-                f"Debes incluir todas las páginas en el nuevo orden."
+                f"Debes incluir todas las páginas en el nuevo orden.\n\n{exit_info}"
             )
 
     except Exception as e:

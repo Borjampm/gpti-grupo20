@@ -5,6 +5,27 @@ from .ad_messages import mensajes_promocionales
 
 MAX_FILE_SIZE = 20 * 1024 * 1024
 
+# Exit keywords in English and Spanish
+EXIT_KEYWORDS = [
+    # English
+    'exit', 'quit', 'cancel', 'stop', 'abort', 'back', 'return', 'leave',
+    # Spanish
+    'salir', 'salida', 'cancelar', 'parar', 'detener', 'abortar', 'volver',
+    'regresar', 'terminar', 'fin', 'finalizar', 'cerrar', 'abandonar'
+]
+
+def is_exit_command(user_input: str) -> bool:
+    """Check if user input contains exit keywords"""
+    if not user_input:
+        return False
+
+    user_input_lower = user_input.lower().strip()
+    return user_input_lower in EXIT_KEYWORDS
+
+def get_exit_info_message() -> str:
+    """Get the message explaining how to exit actions"""
+    return "💡 **Tip:** Puedes escribir 'salir' o 'exit' en cualquier momento para cancelar la acción actual y volver al chat normal."
+
 async def validate_file(update: Update, file_types: list, max_size: int = MAX_FILE_SIZE):
     """Validate file type and size"""
     document = update.message.document

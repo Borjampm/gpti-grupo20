@@ -76,8 +76,8 @@ async def perform_bulk_operation_with_order(zip_path: str, files: list, operatio
             zip_ref.extractall(extract_dir)
 
         with zipfile.ZipFile(new_zip_path, 'w', zipfile.ZIP_DEFLATED) as new_zip:
-            # For operation 5 (PDF concatenation), use the ordered list
-            if operation == 5 and ordered_pdf_files:
+            # For operation 3 (PDF concatenation), use the ordered list
+            if operation == 3 and ordered_pdf_files:
                 processed_files = []
 
                 # Collect PDF files in the specified order
@@ -151,68 +151,82 @@ async def perform_bulk_operation(zip_path: str, files: list, operation: int, cha
 
                 processed = False
 
-                if operation == 1 and filename.lower().endswith('.png'):
-                    # PNG to JPEG
-                    try:
-                        with Image.open(file_path) as img:
-                            if img.mode in ('RGBA', 'LA'):
-                                background = Image.new('RGB', img.size, (255, 255, 255))
-                                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
-                                img = background
-                            new_filename = filename.rsplit('.', 1)[0] + '.jpg'
-                            new_file_path = os.path.join(extract_dir, new_filename)
-                            img.save(new_file_path, 'JPEG', quality=95)
-                            new_zip.write(new_file_path, new_filename)
-                            processed = True
-                    except Exception:
-                        pass
+                if operation == 1:
+                    # Convert all images to PNG (JPEG and SVG)
+                    file_ext = filename.lower().split('.')[-1]
 
-                elif operation == 2 and filename.lower().endswith(('.jpg', '.jpeg')):
-                    # JPEG to PNG
-                    try:
-                        with Image.open(file_path) as img:
+                    if file_ext in ['jpg', 'jpeg']:
+                        # JPEG to PNG
+                        try:
+                            with Image.open(file_path) as img:
+                                if img.mode in ('RGBA', 'LA'):
+                                    background = Image.new('RGB', img.size, (255, 255, 255))
+                                    background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                                    img = background
+                                new_filename = filename.rsplit('.', 1)[0] + '.png'
+                                new_file_path = os.path.join(extract_dir, new_filename)
+                                img.save(new_file_path, 'PNG')
+                                new_zip.write(new_file_path, new_filename)
+                                processed = True
+                        except Exception:
+                            pass
+
+                    elif file_ext == 'svg':
+                        # SVG to PNG
+                        try:
                             new_filename = filename.rsplit('.', 1)[0] + '.png'
                             new_file_path = os.path.join(extract_dir, new_filename)
-                            img.save(new_file_path, 'PNG')
+                            cairosvg.svg2png(url=file_path, write_to=new_file_path, dpi=300)
                             new_zip.write(new_file_path, new_filename)
                             processed = True
-                    except Exception:
-                        pass
+                        except Exception:
+                            pass
 
-                elif operation == 3 and filename.lower().endswith('.svg'):
-                    # SVG to PNG
-                    try:
-                        new_filename = filename.rsplit('.', 1)[0] + '.png'
-                        new_file_path = os.path.join(extract_dir, new_filename)
-                        cairosvg.svg2png(url=file_path, write_to=new_file_path, dpi=300)
-                        new_zip.write(new_file_path, new_filename)
-                        processed = True
-                    except Exception:
-                        pass
+                elif operation == 2:
+                    # Convert all images to JPEG (PNG and SVG)
+                    file_ext = filename.lower().split('.')[-1]
 
-                elif operation == 4 and filename.lower().endswith('.svg'):
-                    # SVG to JPEG
-                    try:
-                        png_path = os.path.join(extract_dir, f"temp_{filename}.png")
-                        new_filename = filename.rsplit('.', 1)[0] + '.jpg'
-                        new_file_path = os.path.join(extract_dir, new_filename)
+                    if file_ext == 'png':
+                        # PNG to JPEG
+                        try:
+                            with Image.open(file_path) as img:
+                                if img.mode in ('RGBA', 'LA'):
+                                    background = Image.new('RGB', img.size, (255, 255, 255))
+                                    background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                                    img = background
+                                elif img.mode == 'P':
+                                    img = img.convert('RGB')
+                                new_filename = filename.rsplit('.', 1)[0] + '.jpg'
+                                new_file_path = os.path.join(extract_dir, new_filename)
+                                img.save(new_file_path, 'JPEG', quality=95)
+                                new_zip.write(new_file_path, new_filename)
+                                processed = True
+                        except Exception:
+                            pass
 
-                        cairosvg.svg2png(url=file_path, write_to=png_path, dpi=300)
-                        with Image.open(png_path) as img:
-                            if img.mode in ('RGBA', 'LA'):
-                                background = Image.new('RGB', img.size, (255, 255, 255))
-                                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
-                                img = background
-                            img.save(new_file_path, 'JPEG', quality=95)
+                    elif file_ext == 'svg':
+                        # SVG to JPEG
+                        try:
+                            png_path = os.path.join(extract_dir, f"temp_{filename}.png")
+                            new_filename = filename.rsplit('.', 1)[0] + '.jpg'
+                            new_file_path = os.path.join(extract_dir, new_filename)
 
-                        new_zip.write(new_file_path, new_filename)
-                        os.remove(png_path)
-                        processed = True
-                    except Exception:
-                        pass
+                            cairosvg.svg2png(url=file_path, write_to=png_path, dpi=300)
+                            with Image.open(png_path) as img:
+                                if img.mode in ('RGBA', 'LA'):
+                                    background = Image.new('RGB', img.size, (255, 255, 255))
+                                    background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                                    img = background
+                                img.save(new_file_path, 'JPEG', quality=95)
 
-                elif operation == 5 and filename.lower().endswith('.pdf'):
-                    # Collect PDFs for concatenation
+                            new_zip.write(new_file_path, new_filename)
+                            os.remove(png_path)
+                            processed = True
+                        except Exception:
+                            pass
+
+                elif operation == 3 and filename.lower().endswith('.pdf'):
+                    # Collect PDFs for concatenation (renumbered from 5 to 3)
                     processed_files.append(file_path)
                     continue
 
@@ -220,8 +234,8 @@ async def perform_bulk_operation(zip_path: str, files: list, operation: int, cha
                 if not processed:
                     new_zip.write(file_path, filename)
 
-            # Handle PDF concatenation if operation 5
-            if operation == 5 and len(processed_files) > 1:
+            # Handle PDF concatenation if operation 3
+            if operation == 3 and len(processed_files) > 1:
                 try:
                     concatenated_path = await concatenate_multiple_pdfs(processed_files, chat_id)
                     if concatenated_path:

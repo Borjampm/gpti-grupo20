@@ -95,30 +95,26 @@ Cada opción sigue un flujo guiado donde el bot:
 4. **Extract pages from PDF** - Create new PDF with only specified pages
 5. **Reorder pages in PDF** - Rearrange pages in custom order (e.g., "3,1,2,4")
 
-### 🖼️ Image Conversions
-6. **JPEG → PNG** - Convert JPEG images to PNG format
-7. **PNG → JPEG** - Convert PNG images to JPEG format (with white background for transparency)
-8. **PDF → PNG (first page)** - Extract first page of PDF as PNG image
-9. **PDF → PNG (all pages)** - Extract all pages of PDF as separate PNG images
-10. **SVG → PNG** - Convert SVG vector graphics to PNG format
-11. **SVG → JPEG** - Convert SVG vector graphics to JPEG format
-
 ### 🗜️ ZIP Operations
-12. **Crear ZIP con varios archivos** - Combinar múltiples archivos en un ZIP
-13. **Extraer ZIP** - Descomprimir un archivo ZIP enviado
-14. **Listar contenidos de un ZIP** - Mostrar la lista de archivos dentro de un ZIP
-15. **Agregar archivo a un ZIP existente** - Añadir uno o varios archivos a un ZIP recibido
-16. **Eliminar archivo de un ZIP existente** - Quitar archivos específicos de un ZIP recibido
-17. **Operaciones en masa dentro de un ZIP**:
-    - Convertir múltiples imágenes (p. ej. PNG → SVG)
-    - Concatenar múltiples PDFs según orden especificado
-    - Renombrar en lote archivos
-    - Aplicar marca de agua a múltiples archivos
-    - Dividir múltiples PDFs en páginas individuales
+6. **Create ZIP with multiple files** - Combine multiple files into a ZIP archive
+7. **Extract ZIP** - Decompress a ZIP file and send all contained files
+8. **List ZIP contents** - Show the list of files inside a ZIP archive
+9. **Add files to existing ZIP** - Add one or more files to an existing ZIP
+10. **Remove files from ZIP** - Remove specific files from an existing ZIP
+
+### 🗜️ Smart Bulk Operations in ZIP
+11. **Convert all images to PNG in ZIP** - Auto-detects and converts JPEG, SVG → PNG
+12. **Convert all images to JPEG in ZIP** - Auto-detects and converts PNG, SVG → JPEG
+13. **Concatenate all PDFs in ZIP** - Merge all PDF files inside a ZIP according to specified order
+
+### 🖼️ Smart Image Conversions
+14. **Transform to PNG** - Automatically detects source format (JPEG, SVG, PDF) and converts to PNG
+15. **Transform to JPEG** - Automatically detects source format (PNG, SVG, PDF) and converts to JPEG
 
 ### 🤖 AI-Powered Features
-- **Intent Classification**: Automatically used to parse user requests in natural language to determine appropriate actions (1-17)
+- **Intent Classification**: Automatically used to parse user requests in natural language to determine appropriate actions (1-15)
 - **Conversational Flow**: Continues interaction until user intent is clearly determined
+- **Smart Format Detection**: Actions 11-15 automatically detect file formats and apply appropriate conversions
 
 ## File Limitations
 
@@ -130,7 +126,7 @@ Cada opción sigue un flujo guiado donde el bot:
   - ZIP archives (.zip)
 
 
-## 🔮 Future Enhancement Ideas
+## �� Future Enhancement Ideas
 
 - Enhanced file validation with more detailed feedback
 - Progress bars for long operations
