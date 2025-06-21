@@ -126,11 +126,23 @@ Cada opción sigue un flujo guiado donde el bot:
   - ZIP archives (.zip)
 
 
-## �� Future Enhancement Ideas
+## 🔮 Future Enhancement Ideas
 
+### 🔄 **Document Format Conversions**
+- **Word Document Operations**: Convert DOCX to PDF and PDF to DOCX (with OCR support)
+- **Excel/CSV Operations**: Convert between CSV and Excel (XLSX) formats
+- **PowerPoint Operations**: Convert PPTX to PDF and enhanced PDF to image conversions
+
+### 📊 **File Information & Analysis**
+- **File Information Services**: Get detailed file metadata, dimensions, page counts, and format validation
+- **QR Code Operations**: Generate QR codes from text and read QR codes from images
+
+### 🤖 **AI-Powered Content Features**
+- **Content Summarization**: AI-powered PDF content summarization and image description generation
+
+### 🔧 **System Improvements**
 - Enhanced file validation with more detailed feedback
 - Progress bars for long operations
-- Support for additional file formats
 - Batch processing with custom scripts
 - Integration with cloud storage services
 
