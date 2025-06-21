@@ -40,8 +40,13 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "13. Extraer archivos de un ZIP\n"
         "14. Listar contenidos de un ZIP\n"
         "15. Agregar archivos a un ZIP existente\n"
-        "16. Eliminar archivos de un ZIP\n"
-        "17. Operaciones en masa dentro de un ZIP\n\n"
+        "16. Eliminar archivos de un ZIP\n\n"
+        "**🗜️ Operaciones masivas en ZIP:**\n"
+        "17. Convertir todas las imágenes PNG a JPEG dentro de un ZIP\n"
+        "18. Convertir todas las imágenes JPEG a PNG dentro de un ZIP\n"
+        "19. Convertir todos los archivos SVG a PNG dentro de un ZIP\n"
+        "20. Convertir todos los archivos SVG a JPEG dentro de un ZIP\n"
+        "21. Concatenar todos los PDFs dentro de un ZIP\n\n"
         "💡 **Para seleccionar directamente por número, usa /manual**"
     )
 
@@ -68,7 +73,7 @@ async def manual(update: Update, context: ContextTypes.DEFAULT_TYPE):
     set_user_state(chat_id, AWAITING_OPTION)
     await update.message.reply_text(
         "🔧 **Modo Manual**\n\n"
-        "Envía directamente el número de la acción que deseas realizar (1-17):\n\n"
+        "Envía directamente el número de la acción que deseas realizar (1-21):\n\n"
         "**📄 Operaciones con PDF:**\n"
         "1. Concatenar dos archivos PDF\n"
         "2. Concatenar múltiples archivos PDF\n"
@@ -87,8 +92,13 @@ async def manual(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "13. Extraer archivos de un ZIP\n"
         "14. Listar contenidos de un ZIP\n"
         "15. Agregar archivos a un ZIP existente\n"
-        "16. Eliminar archivos de un ZIP\n"
-        "17. Operaciones en masa dentro de un ZIP\n"
+        "16. Eliminar archivos de un ZIP\n\n"
+        "**🗜️ Operaciones masivas en ZIP:**\n"
+        "17. Convertir todas las imágenes PNG a JPEG dentro de un ZIP\n"
+        "18. Convertir todas las imágenes JPEG a PNG dentro de un ZIP\n"
+        "19. Convertir todos los archivos SVG a PNG dentro de un ZIP\n"
+        "20. Convertir todos los archivos SVG a JPEG dentro de un ZIP\n"
+        "21. Concatenar todos los PDFs dentro de un ZIP\n"
     )
 
 

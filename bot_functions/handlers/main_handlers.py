@@ -6,7 +6,8 @@ from ..state_manager import (
     AWAITING_PDF_TO_PNG_FIRST, AWAITING_PDF_TO_PNG_ALL, AWAITING_SVG_TO_PNG,
     AWAITING_SVG_TO_JPEG, AWAITING_MULTIPLE_FILES_FOR_ZIP,
     AWAITING_ZIP_TO_EXTRACT, AWAITING_ZIP_TO_LIST, AWAITING_ZIP_FOR_ADD,
-    AWAITING_ZIP_FOR_REMOVE, AWAITING_ZIP_FOR_BULK
+    AWAITING_ZIP_FOR_REMOVE, AWAITING_ZIP_FOR_PNG_TO_JPEG, AWAITING_ZIP_FOR_JPEG_TO_PNG,
+    AWAITING_ZIP_FOR_SVG_TO_PNG, AWAITING_ZIP_FOR_SVG_TO_JPEG, AWAITING_ZIP_FOR_PDF_CONCATENATION
 )
 from ..gemini_client import generate_text
 import os
@@ -89,10 +90,22 @@ async def execute_action(update: Update, chat_id: int, option: int):
         set_user_state(chat_id, AWAITING_ZIP_FOR_REMOVE, selected_option=16)
         await update.message.reply_text("🗜️ **Eliminar archivos de ZIP**\n\nEnvíame el archivo ZIP del cual quieres eliminar archivos.")
     elif option == 17:
-        set_user_state(chat_id, AWAITING_ZIP_FOR_BULK, selected_option=17)
-        await update.message.reply_text("🗜️ **Operaciones en masa dentro de ZIP**\n\nEnvíame el archivo ZIP en el cual quieres realizar operaciones en masa.")
+        set_user_state(chat_id, AWAITING_ZIP_FOR_PNG_TO_JPEG, selected_option=17)
+        await update.message.reply_text("🗜️ **Convertir todas las imágenes PNG a JPEG dentro de un ZIP**\n\nEnvíame el archivo ZIP que contiene las imágenes PNG que quieres convertir a JPEG.")
+    elif option == 18:
+        set_user_state(chat_id, AWAITING_ZIP_FOR_JPEG_TO_PNG, selected_option=18)
+        await update.message.reply_text("🗜️ **Convertir todas las imágenes JPEG a PNG dentro de un ZIP**\n\nEnvíame el archivo ZIP que contiene las imágenes JPEG que quieres convertir a PNG.")
+    elif option == 19:
+        set_user_state(chat_id, AWAITING_ZIP_FOR_SVG_TO_PNG, selected_option=19)
+        await update.message.reply_text("🗜️ **Convertir todos los archivos SVG a PNG dentro de un ZIP**\n\nEnvíame el archivo ZIP que contiene los archivos SVG que quieres convertir a PNG.")
+    elif option == 20:
+        set_user_state(chat_id, AWAITING_ZIP_FOR_SVG_TO_JPEG, selected_option=20)
+        await update.message.reply_text("🗜️ **Convertir todos los archivos SVG a JPEG dentro de un ZIP**\n\nEnvíame el archivo ZIP que contiene los archivos SVG que quieres convertir a JPEG.")
+    elif option == 21:
+        set_user_state(chat_id, AWAITING_ZIP_FOR_PDF_CONCATENATION, selected_option=21)
+        await update.message.reply_text("🗜️ **Concatenar todos los PDFs dentro de un ZIP**\n\nEnvíame el archivo ZIP que contiene los archivos PDF que quieres concatenar.")
     else:
-        await update.message.reply_text("Opción no válida. Por favor, elige un número del 1 al 17 o usa /manual para ver todas las opciones.")
+        await update.message.reply_text("Opción no válida. Por favor, elige un número del 1 al 21 o usa /manual para ver todas las opciones.")
 
 async def handle_intent_classification(update: Update, chat_id: int):
     """Handle intent classification using LLM for IDLE state"""
@@ -117,7 +130,7 @@ async def handle_intent_classification(update: Update, chat_id: int):
 
         if action_match:
             action_number = int(action_match.group(1))
-            if 1 <= action_number <= 17:
+            if 1 <= action_number <= 21:
                 # Execute the identified action
                 await execute_action(update, chat_id, action_number)
                 return

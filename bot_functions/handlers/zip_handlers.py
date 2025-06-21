@@ -6,7 +6,9 @@ from telegram import Update
 from ..state_manager import (
     set_user_state, get_user_data, clear_user_data,
     AWAITING_OPTION, AWAITING_MULTIPLE_FILES_FOR_ZIP, AWAITING_FILES_TO_ADD,
-    AWAITING_FILENAMES_TO_REMOVE, AWAITING_BULK_OPERATION, AWAITING_PDF_CONCATENATION_ORDER, IDLE
+    AWAITING_FILENAMES_TO_REMOVE, AWAITING_BULK_OPERATION, AWAITING_PDF_CONCATENATION_ORDER, IDLE,
+    AWAITING_ZIP_FOR_PNG_TO_JPEG, AWAITING_ZIP_FOR_JPEG_TO_PNG, AWAITING_ZIP_FOR_SVG_TO_PNG,
+    AWAITING_ZIP_FOR_SVG_TO_JPEG, AWAITING_ZIP_FOR_PDF_CONCATENATION
 )
 from ..utils import validate_file, send_processing_and_ad_message, filter_valid_files
 from ..file_processing.zip_processor import (
@@ -466,4 +468,119 @@ async def handle_bulk_operation(update: Update, chat_id: int):
 
     except Exception as e:
         await update.message.reply_text(f"❌ Error en la operación: {str(e)}")
+        set_user_state(chat_id, IDLE)
+
+# New individual bulk operation handlers
+
+async def handle_zip_for_png_to_jpeg(update: Update, chat_id: int):
+    """Handle ZIP file for PNG to JPEG conversion"""
+    await handle_specific_bulk_operation(update, chat_id, 1, "PNG → JPEG")
+
+async def handle_zip_for_jpeg_to_png(update: Update, chat_id: int):
+    """Handle ZIP file for JPEG to PNG conversion"""
+    await handle_specific_bulk_operation(update, chat_id, 2, "JPEG → PNG")
+
+async def handle_zip_for_svg_to_png(update: Update, chat_id: int):
+    """Handle ZIP file for SVG to PNG conversion"""
+    await handle_specific_bulk_operation(update, chat_id, 3, "SVG → PNG")
+
+async def handle_zip_for_svg_to_jpeg(update: Update, chat_id: int):
+    """Handle ZIP file for SVG to JPEG conversion"""
+    await handle_specific_bulk_operation(update, chat_id, 4, "SVG → JPEG")
+
+async def handle_zip_for_pdf_concatenation(update: Update, chat_id: int):
+    """Handle ZIP file for PDF concatenation"""
+    await handle_specific_bulk_operation(update, chat_id, 5, "Concatenación de PDFs")
+
+async def handle_specific_bulk_operation(update: Update, chat_id: int, operation: int, operation_name: str):
+    """Handle ZIP file upload for a specific bulk operation"""
+    is_valid, message = await validate_file(update, ['zip'])
+    if not is_valid:
+        await update.message.reply_text(message)
+        return
+
+    try:
+        file = await update.message.document.get_file()
+        temp_dir = tempfile.gettempdir()
+        file_name = update.message.document.file_name
+        zip_path = os.path.join(temp_dir, f"zip_for_bulk_{operation}_{chat_id}_{file_name}")
+
+        await file.download_to_drive(zip_path)
+
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            all_files = zip_ref.namelist()
+            current_files = filter_valid_files(all_files)
+
+        if not current_files:
+            await update.message.reply_text("❌ El ZIP no contiene archivos válidos.")
+            os.remove(zip_path)
+            set_user_state(chat_id, IDLE)
+            return
+
+        # Check if the operation is applicable
+        applicable_files = []
+        if operation == 1:  # PNG to JPEG
+            applicable_files = [f for f in current_files if f.lower().endswith('.png')]
+        elif operation == 2:  # JPEG to PNG
+            applicable_files = [f for f in current_files if f.lower().endswith(('.jpg', '.jpeg'))]
+        elif operation == 3:  # SVG to PNG
+            applicable_files = [f for f in current_files if f.lower().endswith('.svg')]
+        elif operation == 4:  # SVG to JPEG
+            applicable_files = [f for f in current_files if f.lower().endswith('.svg')]
+        elif operation == 5:  # PDF concatenation
+            applicable_files = [f for f in current_files if f.lower().endswith('.pdf')]
+
+        if not applicable_files:
+            file_types = {1: "PNG", 2: "JPEG", 3: "SVG", 4: "SVG", 5: "PDF"}
+            await update.message.reply_text(f"❌ El ZIP no contiene archivos {file_types[operation]} para procesar.")
+            os.remove(zip_path)
+            set_user_state(chat_id, IDLE)
+            return
+
+        # For PDF concatenation with multiple files, ask for order
+        if operation == 5 and len(applicable_files) > 2:
+            pdf_list = "\n".join([f"{i+1}. {pdf}" for i, pdf in enumerate(applicable_files)])
+
+            set_user_state(chat_id, AWAITING_PDF_CONCATENATION_ORDER,
+                         zip_path=zip_path,
+                         current_files=current_files,
+                         pdf_files=applicable_files,
+                         operation=operation)
+
+            await update.message.reply_text(
+                f"📋 **Se encontraron {len(applicable_files)} archivos PDF:**\n\n{pdf_list}\n\n"
+                f"📝 **Especifica el orden para concatenar los PDFs**\n"
+                f"Envía los números separados por comas (ejemplo: 2,1,3)\n"
+                f"Esto concatenará el archivo 2 primero, luego el 1, luego el 3."
+            )
+            return
+
+        # Execute the operation directly
+        await send_processing_and_ad_message(update, f"🔄 Realizando operación: {operation_name}...")
+
+        if operation == 5:
+            # Use the ordered function for PDF concatenation
+            new_zip_path = await pb_with_order(zip_path, current_files, operation, chat_id, applicable_files)
+        else:
+            new_zip_path = await perform_bulk_operation(zip_path, current_files, operation, chat_id)
+
+        if new_zip_path:
+            with open(new_zip_path, 'rb') as new_zip_file:
+                await update.message.reply_document(
+                    document=new_zip_file,
+                    filename=f"zip_procesado_{operation_name.lower().replace(' ', '_')}_{chat_id}.zip",
+                    caption=f"✅ {operation_name} completada! Se procesaron {len(applicable_files)} archivos."
+                )
+            os.remove(new_zip_path)
+        else:
+            await update.message.reply_text(f"❌ Error al realizar la operación: {operation_name}.")
+
+        if os.path.exists(zip_path):
+            os.remove(zip_path)
+
+        set_user_state(chat_id, IDLE)
+        await update.message.reply_text("¿En qué más puedo ayudarte?")
+
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error al procesar el ZIP: {str(e)}")
         set_user_state(chat_id, IDLE)

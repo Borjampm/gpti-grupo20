@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from .state_manager import get_user_state, AWAITING_OPTION, AWAITING_FIRST_PDF, AWAITING_SECOND_PDF, AWAITING_MULTIPLE_PDFS, AWAITING_PDF_FOR_PAGE_DELETE, AWAITING_PAGE_NUMBERS_DELETE, AWAITING_PDF_FOR_PAGE_EXTRACT, AWAITING_PAGE_NUMBERS_EXTRACT, AWAITING_PDF_FOR_REORDER, AWAITING_PAGE_ORDER, AWAITING_JPEG, AWAITING_PNG, AWAITING_PDF_TO_PNG_FIRST, AWAITING_PDF_TO_PNG_ALL, AWAITING_SVG_TO_PNG, AWAITING_SVG_TO_JPEG, AWAITING_MULTIPLE_FILES_FOR_ZIP, AWAITING_ZIP_TO_EXTRACT, AWAITING_ZIP_TO_LIST, AWAITING_ZIP_FOR_ADD, AWAITING_FILES_TO_ADD, AWAITING_ZIP_FOR_REMOVE, AWAITING_FILENAMES_TO_REMOVE, AWAITING_ZIP_FOR_BULK, AWAITING_BULK_OPERATION, AWAITING_PDF_CONCATENATION_ORDER
+from .state_manager import get_user_state, AWAITING_OPTION, AWAITING_FIRST_PDF, AWAITING_SECOND_PDF, AWAITING_MULTIPLE_PDFS, AWAITING_PDF_FOR_PAGE_DELETE, AWAITING_PAGE_NUMBERS_DELETE, AWAITING_PDF_FOR_PAGE_EXTRACT, AWAITING_PAGE_NUMBERS_EXTRACT, AWAITING_PDF_FOR_REORDER, AWAITING_PAGE_ORDER, AWAITING_JPEG, AWAITING_PNG, AWAITING_PDF_TO_PNG_FIRST, AWAITING_PDF_TO_PNG_ALL, AWAITING_SVG_TO_PNG, AWAITING_SVG_TO_JPEG, AWAITING_MULTIPLE_FILES_FOR_ZIP, AWAITING_ZIP_TO_EXTRACT, AWAITING_ZIP_TO_LIST, AWAITING_ZIP_FOR_ADD, AWAITING_FILES_TO_ADD, AWAITING_ZIP_FOR_REMOVE, AWAITING_FILENAMES_TO_REMOVE, AWAITING_ZIP_FOR_BULK, AWAITING_BULK_OPERATION, AWAITING_PDF_CONCATENATION_ORDER, AWAITING_ZIP_FOR_PNG_TO_JPEG, AWAITING_ZIP_FOR_JPEG_TO_PNG, AWAITING_ZIP_FOR_SVG_TO_PNG, AWAITING_ZIP_FOR_SVG_TO_JPEG, AWAITING_ZIP_FOR_PDF_CONCATENATION
 from .handlers.main_handlers import handle_option_selection, handle_idle_state
 from .handlers.pdf_handlers import (
     handle_first_pdf_upload, handle_second_pdf_upload, handle_multiple_pdfs_upload,
@@ -13,7 +13,9 @@ from .handlers.image_handlers import (
 from .handlers.zip_handlers import (
     handle_multiple_files_for_zip, handle_zip_extraction, handle_zip_listing,
     handle_zip_for_add, handle_files_to_add, handle_zip_for_remove,
-    handle_filenames_to_remove, handle_zip_for_bulk, handle_bulk_operation
+    handle_filenames_to_remove, handle_zip_for_bulk, handle_bulk_operation,
+    handle_zip_for_png_to_jpeg, handle_zip_for_jpeg_to_png, handle_zip_for_svg_to_png,
+    handle_zip_for_svg_to_jpeg, handle_zip_for_pdf_concatenation
 )
 
 
@@ -75,6 +77,16 @@ async def conversation_manager(update: Update, context: ContextTypes.DEFAULT_TYP
         await handle_bulk_operation(update, chat_id)
     elif current_state == AWAITING_PDF_CONCATENATION_ORDER:
         await handle_pdf_concatenation_order(update, chat_id)
+    elif current_state == AWAITING_ZIP_FOR_PNG_TO_JPEG:
+        await handle_zip_for_png_to_jpeg(update, chat_id)
+    elif current_state == AWAITING_ZIP_FOR_JPEG_TO_PNG:
+        await handle_zip_for_jpeg_to_png(update, chat_id)
+    elif current_state == AWAITING_ZIP_FOR_SVG_TO_PNG:
+        await handle_zip_for_svg_to_png(update, chat_id)
+    elif current_state == AWAITING_ZIP_FOR_SVG_TO_JPEG:
+        await handle_zip_for_svg_to_jpeg(update, chat_id)
+    elif current_state == AWAITING_ZIP_FOR_PDF_CONCATENATION:
+        await handle_zip_for_pdf_concatenation(update, chat_id)
     else:
         await handle_idle_state(update, chat_id)
 
