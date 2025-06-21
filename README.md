@@ -111,10 +111,17 @@ Cada opción sigue un flujo guiado donde el bot:
 14. **Transform to PNG** - Automatically detects source format (JPEG, SVG, PDF) and converts to PNG
 15. **Transform to JPEG** - Automatically detects source format (PNG, SVG, PDF) and converts to JPEG
 
+### 📄 Document Format Conversions
+16. **Word to PDF** - Convert DOCX documents to PDF format
+17. **PDF to Word** - Convert PDF files to DOCX format (text extraction)
+18. **CSV to Excel** - Convert CSV files to Excel (XLSX) format
+19. **Excel to CSV** - Convert Excel files to CSV format (first sheet only)
+20. **PowerPoint to PDF** - Convert PPTX/PPT presentations to PDF format
+
 ### 🤖 AI-Powered Features
-- **Intent Classification**: Automatically used to parse user requests in natural language to determine appropriate actions (1-15)
+- **Intent Classification**: Automatically used to parse user requests in natural language to determine appropriate actions (1-20)
 - **Conversational Flow**: Continues interaction until user intent is clearly determined
-- **Smart Format Detection**: Actions 11-15 automatically detect file formats and apply appropriate conversions
+- **Smart Format Detection**: Actions 11-20 automatically detect file formats and apply appropriate conversions
 
 ## File Limitations
 
@@ -124,14 +131,13 @@ Cada opción sigue un flujo guiado donde el bot:
   - Image files (.png, .jpg, .jpeg)
   - Vector graphics (.svg)
   - ZIP archives (.zip)
+  - Word documents (.docx)
+  - Excel files (.xlsx, .xls)
+  - CSV files (.csv)
+  - PowerPoint presentations (.pptx, .ppt)
 
 
 ## 🔮 Future Enhancement Ideas
-
-### 🔄 **Document Format Conversions**
-- **Word Document Operations**: Convert DOCX to PDF and PDF to DOCX (with OCR support)
-- **Excel/CSV Operations**: Convert between CSV and Excel (XLSX) formats
-- **PowerPoint Operations**: Convert PPTX to PDF and enhanced PDF to image conversions
 
 ### 📊 **File Information & Analysis**
 - **File Information Services**: Get detailed file metadata, dimensions, page counts, and format validation
@@ -139,12 +145,6 @@ Cada opción sigue un flujo guiado donde el bot:
 
 ### 🤖 **AI-Powered Content Features**
 - **Content Summarization**: AI-powered PDF content summarization and image description generation
-
-### 🔧 **System Improvements**
-- Enhanced file validation with more detailed feedback
-- Progress bars for long operations
-- Batch processing with custom scripts
-- Integration with cloud storage services
 
 ## Setup
 
@@ -180,7 +180,7 @@ Cada opción sigue un flujo guiado donde el bot:
 ## Commands
 
 - `/start` - Welcome message and introduction to natural language interaction
-- `/help` - Display options menu with all 17 features
+- `/help` - Display options menu with all 20 features
 - `/about` - Information about the bot and its capabilities
 - `/manual` - Access manual mode with numbered options for direct action selection
 

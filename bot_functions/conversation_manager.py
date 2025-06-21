@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from .state_manager import get_user_state, clear_user_data, set_user_state, AWAITING_OPTION, AWAITING_FIRST_PDF, AWAITING_SECOND_PDF, AWAITING_MULTIPLE_PDFS, AWAITING_PDF_FOR_PAGE_DELETE, AWAITING_PAGE_NUMBERS_DELETE, AWAITING_PDF_FOR_PAGE_EXTRACT, AWAITING_PAGE_NUMBERS_EXTRACT, AWAITING_PDF_FOR_REORDER, AWAITING_PAGE_ORDER, AWAITING_MULTIPLE_FILES_FOR_ZIP, AWAITING_ZIP_TO_EXTRACT, AWAITING_ZIP_TO_LIST, AWAITING_ZIP_FOR_ADD, AWAITING_FILES_TO_ADD, AWAITING_ZIP_FOR_REMOVE, AWAITING_FILENAMES_TO_REMOVE, AWAITING_ZIP_FOR_BULK, AWAITING_BULK_OPERATION, AWAITING_PDF_CONCATENATION_ORDER, AWAITING_ZIP_FOR_IMAGES_TO_PNG, AWAITING_ZIP_FOR_IMAGES_TO_JPEG, AWAITING_ZIP_FOR_PDF_CONCATENATION, AWAITING_IMAGE_TO_PNG, AWAITING_IMAGE_TO_JPEG, IDLE
+from .state_manager import get_user_state, clear_user_data, set_user_state, AWAITING_OPTION, AWAITING_FIRST_PDF, AWAITING_SECOND_PDF, AWAITING_MULTIPLE_PDFS, AWAITING_PDF_FOR_PAGE_DELETE, AWAITING_PAGE_NUMBERS_DELETE, AWAITING_PDF_FOR_PAGE_EXTRACT, AWAITING_PAGE_NUMBERS_EXTRACT, AWAITING_PDF_FOR_REORDER, AWAITING_PAGE_ORDER, AWAITING_MULTIPLE_FILES_FOR_ZIP, AWAITING_ZIP_TO_EXTRACT, AWAITING_ZIP_TO_LIST, AWAITING_ZIP_FOR_ADD, AWAITING_FILES_TO_ADD, AWAITING_ZIP_FOR_REMOVE, AWAITING_FILENAMES_TO_REMOVE, AWAITING_ZIP_FOR_BULK, AWAITING_BULK_OPERATION, AWAITING_PDF_CONCATENATION_ORDER, AWAITING_ZIP_FOR_IMAGES_TO_PNG, AWAITING_ZIP_FOR_IMAGES_TO_JPEG, AWAITING_ZIP_FOR_PDF_CONCATENATION, AWAITING_IMAGE_TO_PNG, AWAITING_IMAGE_TO_JPEG, AWAITING_DOCX_TO_PDF, AWAITING_PDF_TO_DOCX, AWAITING_CSV_TO_EXCEL, AWAITING_EXCEL_TO_CSV, AWAITING_PPTX_TO_PDF, IDLE
 from .utils import is_exit_command
 from .handlers.main_handlers import handle_option_selection, handle_idle_state
 from .handlers.pdf_handlers import (
@@ -10,6 +10,10 @@ from .handlers.pdf_handlers import (
 )
 from .handlers.image_handlers import (
     handle_generic_image_to_png, handle_generic_image_to_jpeg
+)
+from .handlers.document_handlers import (
+    handle_docx_to_pdf, handle_pdf_to_docx, handle_csv_to_excel,
+    handle_excel_to_csv, handle_pptx_to_pdf
 )
 from .handlers.zip_handlers import (
     handle_multiple_files_for_zip, handle_zip_extraction, handle_zip_listing,
@@ -85,6 +89,16 @@ async def conversation_manager(update: Update, context: ContextTypes.DEFAULT_TYP
         await handle_generic_image_to_png(update, chat_id)
     elif current_state == AWAITING_IMAGE_TO_JPEG:
         await handle_generic_image_to_jpeg(update, chat_id)
+    elif current_state == AWAITING_DOCX_TO_PDF:
+        await handle_docx_to_pdf(update, chat_id)
+    elif current_state == AWAITING_PDF_TO_DOCX:
+        await handle_pdf_to_docx(update, chat_id)
+    elif current_state == AWAITING_CSV_TO_EXCEL:
+        await handle_csv_to_excel(update, chat_id)
+    elif current_state == AWAITING_EXCEL_TO_CSV:
+        await handle_excel_to_csv(update, chat_id)
+    elif current_state == AWAITING_PPTX_TO_PDF:
+        await handle_pptx_to_pdf(update, chat_id)
     else:
         await handle_idle_state(update, chat_id)
 

@@ -42,6 +42,12 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "**🖼️ Conversiones inteligentes:**\n"
         "14. Imagen → PNG (detecta automáticamente: JPEG, SVG, PDF)\n"
         "15. Imagen → JPEG (detecta automáticamente: PNG, SVG, PDF)\n\n"
+        "**📄 Conversiones de documentos:**\n"
+        "16. Documento Word (DOCX) → PDF\n"
+        "17. PDF → Documento Word (DOCX)\n"
+        "18. Archivo CSV → Excel (XLSX)\n"
+        "19. Archivo Excel (XLSX/XLS) → CSV\n"
+        "20. Presentación PowerPoint (PPTX/PPT) → PDF\n\n"
         "💡 **Para seleccionar directamente por número, usa /manual**"
     )
 
@@ -49,16 +55,17 @@ async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /about command"""
     await update.message.reply_text(
         "🤖 **Bot de Procesamiento de Archivos**\n\n"
-        "Soy un bot que puede procesar archivos PDF, imágenes y ZIP de diferentes maneras:\n"
+        "Soy un bot que puede procesar archivos PDF, imágenes, documentos y ZIP de diferentes maneras:\n"
         "• Combinar y manipular archivos PDF\n"
         "• Convertir entre formatos de imagen\n"
         "• Extraer imágenes desde PDFs\n"
         "• Convertir archivos SVG\n"
+        "• Convertir documentos Word, Excel y PowerPoint\n"
         "• Crear y gestionar archivos ZIP\n"
         "• Realizar operaciones en masa dentro de ZIP\n\n"
         "**Límites:**\n"
         "• Tamaño máximo por archivo: 20 MB\n"
-        "• Formatos soportados: PDF, PNG, JPEG, SVG, ZIP\n\n"
+        "• Formatos soportados: PDF, PNG, JPEG, SVG, ZIP, DOCX, XLSX, XLS, CSV, PPTX, PPT\n\n"
         "Escribe /help para ver todas las opciones disponibles."
     )
 
@@ -69,7 +76,7 @@ async def manual(update: Update, context: ContextTypes.DEFAULT_TYPE):
     exit_info = get_exit_info_message()
     await update.message.reply_text(
         f"🔧 **Modo Manual**\n\n"
-        f"Envía directamente el número de la acción que deseas realizar (1-15):\n\n"
+        f"Envía directamente el número de la acción que deseas realizar (1-20):\n\n"
         f"**📄 Operaciones con PDF:**\n"
         f"1. Concatenar dos archivos PDF\n"
         f"2. Concatenar múltiples archivos PDF\n"
@@ -88,7 +95,13 @@ async def manual(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"13. Concatenar todos los PDFs dentro de un ZIP\n\n"
         f"**🖼️ Conversiones inteligentes:**\n"
         f"14. Imagen → PNG (detecta automáticamente: JPEG, SVG, PDF)\n"
-        f"15. Imagen → JPEG (detecta automáticamente: PNG, SVG, PDF)\n\n{exit_info}"
+        f"15. Imagen → JPEG (detecta automáticamente: PNG, SVG, PDF)\n\n"
+        f"**📄 Conversiones de documentos:**\n"
+        f"16. Documento Word (DOCX) → PDF\n"
+        f"17. PDF → Documento Word (DOCX)\n"
+        f"18. Archivo CSV → Excel (XLSX)\n"
+        f"19. Archivo Excel (XLSX/XLS) → CSV\n"
+        f"20. Presentación PowerPoint (PPTX/PPT) → PDF\n\n{exit_info}"
     )
 
 

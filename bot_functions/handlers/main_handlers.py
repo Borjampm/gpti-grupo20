@@ -5,7 +5,9 @@ from ..state_manager import (
     AWAITING_PDF_FOR_REORDER, AWAITING_MULTIPLE_FILES_FOR_ZIP,
     AWAITING_ZIP_TO_EXTRACT, AWAITING_ZIP_TO_LIST, AWAITING_ZIP_FOR_ADD,
     AWAITING_ZIP_FOR_REMOVE, AWAITING_ZIP_FOR_IMAGES_TO_PNG, AWAITING_ZIP_FOR_IMAGES_TO_JPEG,
-    AWAITING_ZIP_FOR_PDF_CONCATENATION, AWAITING_IMAGE_TO_PNG, AWAITING_IMAGE_TO_JPEG
+    AWAITING_ZIP_FOR_PDF_CONCATENATION, AWAITING_IMAGE_TO_PNG, AWAITING_IMAGE_TO_JPEG,
+    AWAITING_DOCX_TO_PDF, AWAITING_PDF_TO_DOCX, AWAITING_CSV_TO_EXCEL,
+    AWAITING_EXCEL_TO_CSV, AWAITING_PPTX_TO_PDF
 )
 from ..gemini_client import generate_text
 from ..utils import get_exit_info_message
@@ -82,8 +84,23 @@ async def execute_action(update: Update, chat_id: int, option: int):
     elif option == 15:
         set_user_state(chat_id, AWAITING_IMAGE_TO_JPEG, selected_option=15)
         await update.message.reply_text(f"🖼️ **Imagen → JPEG**\n\nEnvíame la imagen que quieres convertir a JPEG (detectaré automáticamente el formato: PNG, SVG, PDF).\n\n{exit_info}")
+    elif option == 16:
+        set_user_state(chat_id, AWAITING_DOCX_TO_PDF, selected_option=16)
+        await update.message.reply_text(f"📄 **Word → PDF**\n\nEnvíame el documento Word (DOCX) que quieres convertir a PDF.\n\n{exit_info}")
+    elif option == 17:
+        set_user_state(chat_id, AWAITING_PDF_TO_DOCX, selected_option=17)
+        await update.message.reply_text(f"📄 **PDF → Word**\n\nEnvíame el archivo PDF que quieres convertir a documento Word (DOCX).\n\n{exit_info}")
+    elif option == 18:
+        set_user_state(chat_id, AWAITING_CSV_TO_EXCEL, selected_option=18)
+        await update.message.reply_text(f"📊 **CSV → Excel**\n\nEnvíame el archivo CSV que quieres convertir a Excel (XLSX).\n\n{exit_info}")
+    elif option == 19:
+        set_user_state(chat_id, AWAITING_EXCEL_TO_CSV, selected_option=19)
+        await update.message.reply_text(f"📊 **Excel → CSV**\n\nEnvíame el archivo Excel (XLSX/XLS) que quieres convertir a CSV.\n\n{exit_info}")
+    elif option == 20:
+        set_user_state(chat_id, AWAITING_PPTX_TO_PDF, selected_option=20)
+        await update.message.reply_text(f"📊 **PowerPoint → PDF**\n\nEnvíame la presentación PowerPoint (PPTX/PPT) que quieres convertir a PDF.\n\n{exit_info}")
     else:
-        await update.message.reply_text("Opción no válida. Por favor, elige un número del 1 al 15 o usa /manual para ver todas las opciones.")
+        await update.message.reply_text("Opción no válida. Por favor, elige un número del 1 al 20 o usa /manual para ver todas las opciones.")
 
 async def handle_intent_classification(update: Update, chat_id: int):
     """Use Gemini to classify user intent and execute corresponding action"""
@@ -100,7 +117,7 @@ async def handle_intent_classification(update: Update, chat_id: int):
         action_match = re.search(r"Acción:\s*(\d+)", response)
         if action_match:
             action_number = int(action_match.group(1))
-            if 1 <= action_number <= 15:
+            if 1 <= action_number <= 20:
                 # Execute the identified action
                 await execute_action(update, chat_id, action_number)
             else:
