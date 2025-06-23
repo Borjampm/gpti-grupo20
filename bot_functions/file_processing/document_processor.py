@@ -114,36 +114,109 @@ async def _create_simple_pdf_from_docx(docx_path: str, chat_id: int) -> str:
         return None
 
 async def convert_pdf_to_docx(pdf_path: str, chat_id: int) -> str:
-    """Convert PDF file to DOCX (basic text extraction)"""
+    """Convert PDF file to DOCX with formatting preservation"""
     try:
-        from PyPDF2 import PdfReader
-
         temp_dir = tempfile.gettempdir()
         output_path = os.path.join(temp_dir, f"pdf_to_docx_{chat_id}.docx")
 
-        # Extract text from PDF
-        reader = PdfReader(pdf_path)
-        text_content = []
+        # Try pdf2docx first for best formatting preservation
+        try:
+            from pdf2docx import Converter
 
-        for page in reader.pages:
-            text = page.extract_text()
-            if text.strip():
-                text_content.append(text)
+            # Create converter instance
+            cv = Converter(pdf_path)
 
-        # Create DOCX document
-        doc = Document()
+            # Convert PDF to DOCX with formatting preservation
+            cv.convert(output_path, start=0, end=None)
+            cv.close()
 
-        for page_text in text_content:
-            # Split into paragraphs by double newlines or long lines
-            paragraphs = page_text.split('\n\n')
-            for para in paragraphs:
-                if para.strip():
-                    doc.add_paragraph(para.strip())
+            if os.path.exists(output_path):
+                print(f"Successfully converted using pdf2docx: {pdf_path}")
+                return output_path
 
-        doc.save(output_path)
-        return output_path
+        except ImportError:
+            print("pdf2docx not available, falling back to text extraction method")
+        except Exception as e:
+            print(f"pdf2docx conversion failed: {e}, falling back to text extraction method")
+
+        # Fallback to PyPDF2 text extraction method
+        print("Using PyPDF2 text extraction fallback method")
+        return await _create_simple_docx_from_pdf(pdf_path, chat_id)
+
     except Exception as e:
         print(f"Error converting PDF to DOCX: {e}")
+        return None
+
+async def _create_simple_docx_from_pdf(pdf_path: str, chat_id: int) -> str:
+    """Fallback method to create DOCX from PDF using text extraction"""
+    try:
+        from PyPDF2 import PdfReader
+        from docx import Document
+        from docx.shared import Inches
+        from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+
+        temp_dir = tempfile.gettempdir()
+        output_path = os.path.join(temp_dir, f"pdf_to_docx_simple_{chat_id}.docx")
+
+        # Extract text from PDF
+        reader = PdfReader(pdf_path)
+
+        # Create DOCX document with better formatting
+        doc = Document()
+
+        # Add title
+        title = doc.add_heading('Documento convertido desde PDF', 0)
+        title.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+
+        # Add some spacing
+        doc.add_paragraph()
+
+        for page_num, page in enumerate(reader.pages, 1):
+            text = page.extract_text()
+            if text.strip():
+                # Add page header
+                if page_num > 1:
+                    doc.add_page_break()
+
+                page_header = doc.add_heading(f'Página {page_num}', level=2)
+                page_header.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+
+                # Process text into paragraphs
+                paragraphs = text.split('\n\n')
+                for para_text in paragraphs:
+                    if para_text.strip():
+                        # Clean up the text
+                        cleaned_text = ' '.join(para_text.split())
+                        if len(cleaned_text) > 10:  # Only add substantial paragraphs
+                            para = doc.add_paragraph(cleaned_text)
+                            para.style = 'Normal'
+
+                # Add some spacing between pages
+                doc.add_paragraph()
+            else:
+                # Handle pages with no extractable text
+                if page_num > 1:
+                    doc.add_page_break()
+
+                page_header = doc.add_heading(f'Página {page_num}', level=2)
+                no_text_para = doc.add_paragraph('[Esta página no contiene texto extraíble o contiene solo imágenes]')
+                no_text_para.italic = True
+
+        # Add footer note
+        doc.add_paragraph()
+        footer_para = doc.add_paragraph()
+        footer_run = footer_para.add_run('Nota: Este documento fue convertido automáticamente desde PDF. '
+                                       'La formatación original puede no estar completamente preservada.')
+        footer_run.italic = True
+        footer_run.font.size = 12
+        footer_para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+
+        doc.save(output_path)
+        print(f"Created enhanced DOCX from PDF text extraction: {output_path}")
+        return output_path
+
+    except Exception as e:
+        print(f"Error creating simple DOCX from PDF: {e}")
         return None
 
 async def convert_csv_to_excel(csv_path: str, chat_id: int) -> str:

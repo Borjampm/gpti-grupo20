@@ -97,7 +97,7 @@ async def handle_pdf_to_docx(update: Update, chat_id: int):
         # Send processing message
         await send_processing_and_ad_message(
             update,
-            "🔄 Convirtiendo PDF a documento Word...",
+            "🔄 Convirtiendo PDF a documento Word con preservación de formato...",
             2.0
         )
 
@@ -105,13 +105,27 @@ async def handle_pdf_to_docx(update: Update, chat_id: int):
         output_path = await convert_pdf_to_docx(temp_input_path, chat_id)
 
         if output_path and os.path.exists(output_path):
+            # Determine appropriate caption based on conversion method
+            caption = "✅ **Conversión completada**\n\n"
+
+            # Check if pdf2docx is available to determine the method used
+            try:
+                from pdf2docx import Converter
+                caption += ("📄 PDF convertido a documento Word con **formato preservado** usando pdf2docx.\n\n"
+                           "✨ Esta conversión mantiene el formato original, incluyendo texto, tablas, imágenes y estilos. "
+                           "La calidad de la conversión depende de la complejidad del PDF original.")
+            except ImportError:
+                caption += ("📄 PDF convertido a documento Word usando extracción de texto mejorada.\n\n"
+                           "⚠️ **Nota**: Para una mejor preservación del formato con tablas e imágenes, "
+                           "instala la biblioteca pdf2docx: `pip install pdf2docx`\n\n"
+                           "⚠️ **Limitación actual**: Esta conversión extrae solo el texto del PDF.")
+
             # Send the converted file
             with open(output_path, 'rb') as docx_file:
                 await update.message.reply_document(
                     document=docx_file,
                     filename=f"{document.file_name.rsplit('.', 1)[0]}.docx",
-                    caption="✅ **Conversión completada**\n\nPDF convertido a documento Word.\n\n"
-                           "⚠️ **Nota:** La conversión extrae solo el texto del PDF."
+                    caption=caption
                 )
 
             # Clean up

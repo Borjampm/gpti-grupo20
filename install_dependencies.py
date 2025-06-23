@@ -51,6 +51,7 @@ def main():
 
     print("\n📋 Special Notes:")
     print("• docx2pdf provides enhanced Word to PDF conversion with formatting preservation")
+    print("• pdf2docx provides enhanced PDF to Word conversion with layout, tables, and images")
     print("• LibreOffice CLI provides enhanced PowerPoint to PDF conversion")
     print("• Cross-platform compatibility (Windows, macOS, Linux)")
     print("• Automatic fallback methods for maximum compatibility")

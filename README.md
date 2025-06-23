@@ -35,8 +35,9 @@
 
 ## ✅ Recent Features Implemented
 
-- [x] **Enhanced Document to PDF Conversions**:
+- [x] **Enhanced Document Conversions**:
   - **Word to PDF**: docx2pdf integration for superior formatting preservation
+  - **PDF to Word**: pdf2docx integration for maintaining layouts, tables, and images
   - **PowerPoint to PDF**: LibreOffice CLI for maintaining slide layouts and designs
   - Maintains fonts, styles, images, tables, and complex layouts
   - Automatic fallback methods for maximum compatibility
@@ -119,7 +120,7 @@ Cada opción sigue un flujo guiado donde el bot:
 
 ### 📄 Document Format Conversions
 16. **Word to PDF** - Convert DOCX documents to PDF format **with formatting preservation** (using docx2pdf)
-17. **PDF to Word** - Convert PDF files to DOCX format (text extraction)
+17. **PDF to Word** - Convert PDF files to DOCX format **with formatting preservation** (using pdf2docx)
 18. **CSV to Excel** - Convert CSV files to Excel (XLSX) format
 19. **Excel to CSV** - Convert Excel files to CSV format (first sheet only)
 20. **PowerPoint to PDF** - Convert PPTX/PPT presentations to PDF format **with formatting preservation** (using LibreOffice CLI)
@@ -189,8 +190,9 @@ Cada opción sigue un flujo guiado donde el bot:
      # Download and install LibreOffice from https://www.libreoffice.org/
      ```
 
-   - **For enhanced document conversions**:
-     - **Word to PDF**: `docx2pdf` (already included in requirements.txt)
+   - **For enhanced document conversions** (already included in requirements.txt):
+     - **Word to PDF**: `docx2pdf` - Cross-platform library for maintaining document formatting
+     - **PDF to Word**: `pdf2docx` - Advanced library for preserving tables, images, and layouts
      - **PowerPoint to PDF**: LibreOffice CLI for best formatting preservation
      - Automatically falls back to alternative methods if needed
 
