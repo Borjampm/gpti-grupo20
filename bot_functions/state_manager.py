@@ -6,6 +6,7 @@ conversation_state = {}
 # State constants
 IDLE = "IDLE"
 AWAITING_OPTION = "AWAITING_OPTION"
+AWAITING_CLARIFICATION = "AWAITING_CLARIFICATION"
 AWAITING_FIRST_PDF = "AWAITING_FIRST_PDF"
 AWAITING_SECOND_PDF = "AWAITING_SECOND_PDF"
 AWAITING_MULTIPLE_PDFS = "AWAITING_MULTIPLE_PDFS"
@@ -75,3 +76,26 @@ def clear_user_data(chat_id):
                     if path and os.path.exists(path):
                         os.remove(path)
         conversation_state[chat_id] = {}
+
+def set_conversation_history(chat_id, messages):
+    """Set the conversation history for a user"""
+    if chat_id not in conversation_state:
+        conversation_state[chat_id] = {}
+    conversation_state[chat_id]['conversation_history'] = messages
+
+def get_conversation_history(chat_id):
+    """Get the conversation history for a user"""
+    return conversation_state.get(chat_id, {}).get('conversation_history', [])
+
+def add_to_conversation_history(chat_id, role, message):
+    """Add a message to the conversation history"""
+    if chat_id not in conversation_state:
+        conversation_state[chat_id] = {}
+    if 'conversation_history' not in conversation_state[chat_id]:
+        conversation_state[chat_id]['conversation_history'] = []
+    conversation_state[chat_id]['conversation_history'].append({'role': role, 'message': message})
+
+def clear_conversation_history(chat_id):
+    """Clear the conversation history for a user"""
+    if chat_id in conversation_state and 'conversation_history' in conversation_state[chat_id]:
+        conversation_state[chat_id]['conversation_history'] = []

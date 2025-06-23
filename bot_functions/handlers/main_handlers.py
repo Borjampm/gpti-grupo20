@@ -7,7 +7,8 @@ from ..state_manager import (
     AWAITING_ZIP_FOR_REMOVE, AWAITING_ZIP_FOR_IMAGES_TO_PNG, AWAITING_ZIP_FOR_IMAGES_TO_JPEG,
     AWAITING_ZIP_FOR_PDF_CONCATENATION, AWAITING_IMAGE_TO_PNG, AWAITING_IMAGE_TO_JPEG,
     AWAITING_DOCX_TO_PDF, AWAITING_PDF_TO_DOCX, AWAITING_CSV_TO_EXCEL,
-    AWAITING_EXCEL_TO_CSV, AWAITING_PPTX_TO_PDF
+    AWAITING_EXCEL_TO_CSV, AWAITING_PPTX_TO_PDF, AWAITING_CLARIFICATION,
+    add_to_conversation_history, get_conversation_history, clear_conversation_history
 )
 from ..gemini_client import generate_text
 from ..utils import get_exit_info_message
@@ -107,26 +108,48 @@ async def handle_intent_classification(update: Update, chat_id: int):
     user_message = update.message.text
     system_prompt = get_system_prompt()
 
-    # Prepare the prompt for Gemini
-    prompt = f"{system_prompt}\n\n<USER>\n{user_message}\n\n<ASSISTANT>"
+    # Add user message to conversation history
+    add_to_conversation_history(chat_id, "USER", user_message)
+
+    # Build conversation history for the prompt
+    conversation_history = get_conversation_history(chat_id)
+    conversation_text = ""
+    for msg in conversation_history:
+        conversation_text += f"<{msg['role']}>\n{msg['message']}\n\n"
+
+    # Prepare the prompt for Gemini with conversation history
+    prompt = f"{system_prompt}\n\n{conversation_text}<ASSISTANT>"
 
     try:
         response = await generate_text(prompt)
+
+        # Add assistant response to conversation history
+        add_to_conversation_history(chat_id, "ASSISTANT", response)
 
         # Extract action number from response
         action_match = re.search(r"Acción:\s*(\d+)", response)
         if action_match:
             action_number = int(action_match.group(1))
             if 1 <= action_number <= 20:
-                # Execute the identified action
+                # Execute the identified action and clear conversation history
+                clear_conversation_history(chat_id)
                 await execute_action(update, chat_id, action_number)
             else:
                 await update.message.reply_text("No pude identificar una acción válida. Usa /manual para ver todas las opciones disponibles.")
+        elif "no está disponible" in response.lower() or "no encuentras una opción" in response.lower():
+            # Action not available response - clear conversation history and send response
+            clear_conversation_history(chat_id)
+            await update.message.reply_text(response)
         else:
-            # If no action number found, send the Gemini response as is
+            # Clarification needed - set state to continue conversation
+            set_user_state(chat_id, AWAITING_CLARIFICATION)
             await update.message.reply_text(response)
     except Exception as e:
         await update.message.reply_text(f"Error al procesar tu solicitud. Intenta de nuevo o usa /manual para seleccionar directamente.")
+
+async def handle_clarification_continuation(update: Update, chat_id: int):
+    """Handle continuing conversation for clarification"""
+    await handle_intent_classification(update, chat_id)
 
 async def handle_idle_state(update: Update, chat_id: int):
     """Handle messages when user is in idle state - use intent classification"""

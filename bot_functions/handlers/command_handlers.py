@@ -1,19 +1,21 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from ..state_manager import set_user_state, IDLE, AWAITING_OPTION
+from ..state_manager import set_user_state, IDLE, AWAITING_OPTION, clear_conversation_history
 from ..utils import get_exit_info_message
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /start command - welcome user and set state to IDLE"""
     chat_id = update.message.chat_id
+    clear_conversation_history(chat_id)
     set_user_state(chat_id, IDLE)
     await update.message.reply_text(
-        "¡Hola! 👋 Bienvenido al bot de procesamiento de archivos.\n\n"
-        "🤖 **Simplemente describe lo que quieres hacer** y yo entenderé tu solicitud:\n"
+        "¡Hola! 👋 Bienvenido al bot de procesamiento de archivos.\n"
+        "Por favor, no subas un archivo hasta que yo te lo pida.\n"
+        "🤖 Cuentame, con qué necesitas ayuda hoy? Algunas ideas:\n\n"
         "• \"Quiero unir dos PDFs\"\n"
         "• \"Convierte esta imagen a PNG\"\n"
         "• \"Extrae las páginas 2-5 de un PDF\"\n\n"
-        "📋 O usa **/manual** para ver todas las opciones numeradas.\n"
+        "📋 Alternativamente puedes usar **/manual** para ver todas las opciones numeradas y elegir una manualmente.\n"
         "ℹ️ Usa **/help** para ver la lista completa de funciones disponibles."
     )
 
@@ -72,6 +74,7 @@ async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def manual(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /manual command - allows direct action selection"""
     chat_id = update.message.chat_id
+    clear_conversation_history(chat_id)
     set_user_state(chat_id, AWAITING_OPTION)
     exit_info = get_exit_info_message()
     await update.message.reply_text(
