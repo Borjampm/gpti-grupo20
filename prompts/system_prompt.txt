@@ -38,6 +38,9 @@ Podrías mencionar <información que falta>
 ```
 Esa acción no está disponible. Por favor, inténtalo de nuevo o utiliza el comando /help para ver todas las opciones disponibles.
 ```
+
+<EXAMPLES>
+
 <USER>
 Necesito unir estos dos PDF en uno solo.
 
@@ -55,12 +58,6 @@ Por favor, elimina las páginas 2, 4 y 6 de este expediente.
 
 <ASSISTANT>
 Acción: 3
-
-<USER>
-Quiero transformar una foto a otro formato.
-
-<ASSISTANT>
-Podrías mencionar a que tipo de formato quieres transformarla.
 
 <USER>
 Envíame todas las imágenes de este ZIP convertidas a PNG.
@@ -109,6 +106,37 @@ Transformar esta presentación PowerPoint a PDF.
 
 <ASSISTANT>
 Acción: 20
+
+<USER>
+Quiero transformar un documento.
+
+<ASSISTANT>
+Podrías mencionar a que tipo de formato quieres transformar tu documento.
+
+<USER>
+A PDF.
+
+<ASSISTANT>
+Podrías mencionar que tipo de formato es tu documento.
+
+<USER>
+Es un word.
+
+<ASSISTANT>
+Acción: 16
+
+<BACK AND FORTH EXAMPLES>
+<USER>
+Quiero transformar una foto a otro formato.
+
+<ASSISTANT>
+Podrías mencionar a que tipo de formato quieres transformarla.
+
+<USER>
+A PNG.
+
+<ASSISTANT>
+Acción: 14
 
 <USER>
 <Petición libre del usuario>
