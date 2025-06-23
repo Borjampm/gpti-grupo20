@@ -35,6 +35,12 @@
 
 ## ✅ Recent Features Implemented
 
+- [x] **Enhanced Document to PDF Conversions**:
+  - **Word to PDF**: docx2pdf integration for superior formatting preservation
+  - **PowerPoint to PDF**: LibreOffice CLI for maintaining slide layouts and designs
+  - Maintains fonts, styles, images, tables, and complex layouts
+  - Automatic fallback methods for maximum compatibility
+  - Cross-platform compatibility (Windows, macOS, Linux)
 - [x] **Advertising messages during file processing**:
   - Users receive processing updates like "🔄 Concatenando PDFs en el orden especificado"
   - Random promotional messages appear while files are being processed
@@ -112,11 +118,11 @@ Cada opción sigue un flujo guiado donde el bot:
 15. **Transform to JPEG** - Automatically detects source format (PNG, SVG, PDF) and converts to JPEG
 
 ### 📄 Document Format Conversions
-16. **Word to PDF** - Convert DOCX documents to PDF format
+16. **Word to PDF** - Convert DOCX documents to PDF format **with formatting preservation** (using docx2pdf)
 17. **PDF to Word** - Convert PDF files to DOCX format (text extraction)
 18. **CSV to Excel** - Convert CSV files to Excel (XLSX) format
 19. **Excel to CSV** - Convert Excel files to CSV format (first sheet only)
-20. **PowerPoint to PDF** - Convert PPTX/PPT presentations to PDF format
+20. **PowerPoint to PDF** - Convert PPTX/PPT presentations to PDF format **with formatting preservation** (using LibreOffice CLI)
 
 ### 🤖 AI-Powered Features
 - **Intent Classification**: Automatically used to parse user requests in natural language to determine appropriate actions (1-20)
@@ -131,10 +137,10 @@ Cada opción sigue un flujo guiado donde el bot:
   - Image files (.png, .jpg, .jpeg)
   - Vector graphics (.svg)
   - ZIP archives (.zip)
-  - Word documents (.docx)
+  - Word documents (.docx) - **Enhanced conversion with formatting preservation using docx2pdf**
   - Excel files (.xlsx, .xls)
   - CSV files (.csv)
-  - PowerPoint presentations (.pptx, .ppt)
+  - PowerPoint presentations (.pptx, .ppt) - **Enhanced conversion with formatting preservation using LibreOffice CLI**
 
 
 ## 🔮 Future Enhancement Ideas
@@ -153,6 +159,11 @@ Cada opción sigue un flujo guiado donde el bot:
    pip install -r requirements.txt
    ```
 
+   **Or use the automated installation script:**
+   ```bash
+   python install_dependencies.py
+   ```
+
 2. **Additional system requirements**:
    - For PDF to image conversion: `poppler-utils`
      ```bash
@@ -165,6 +176,23 @@ Cada opción sigue un flujo guiado donde el bot:
      # Windows
      # Download poppler binaries and add to PATH
      ```
+
+   - For enhanced PowerPoint to PDF conversion:
+     ```bash
+     # Ubuntu/Debian
+     sudo apt-get install libreoffice
+
+     # macOS
+     brew install --cask libreoffice
+
+     # Windows
+     # Download and install LibreOffice from https://www.libreoffice.org/
+     ```
+
+   - **For enhanced document conversions**:
+     - **Word to PDF**: `docx2pdf` (already included in requirements.txt)
+     - **PowerPoint to PDF**: LibreOffice CLI for best formatting preservation
+     - Automatically falls back to alternative methods if needed
 
 3. Create a `.env` file with your bot token and Gemini API key:
    ```

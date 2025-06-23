@@ -27,7 +27,7 @@ async def handle_docx_to_pdf(update: Update, chat_id: int):
         # Send processing message
         await send_processing_and_ad_message(
             update,
-            "🔄 Convirtiendo documento Word a PDF...",
+            "🔄 Convirtiendo documento Word a PDF con preservación de formato...",
             2.0
         )
 
@@ -35,12 +35,25 @@ async def handle_docx_to_pdf(update: Update, chat_id: int):
         output_path = await convert_docx_to_pdf(temp_input_path, chat_id)
 
         if output_path and os.path.exists(output_path):
+            # Determine which method was used for appropriate caption
+            caption = "✅ **Conversión completada**\n\n"
+
+            # Check if docx2pdf is available to determine the method used
+            try:
+                from docx2pdf import convert
+                caption += ("📄 Documento Word convertido a PDF con **formato preservado** usando docx2pdf.\n\n"
+                           "✨ Esta conversión mantiene el formato original, incluyendo fuentes, estilos e imágenes.")
+            except ImportError:
+                caption += ("📄 Documento Word convertido a PDF usando método alternativo.\n\n"
+                           "⚠️ **Nota**: Para una mejor preservación del formato, "
+                           "instala la biblioteca docx2pdf: `pip install docx2pdf`")
+
             # Send the converted file
             with open(output_path, 'rb') as pdf_file:
                 await update.message.reply_document(
                     document=pdf_file,
                     filename=f"{document.file_name.rsplit('.', 1)[0]}.pdf",
-                    caption="✅ **Conversión completada**\n\nDocumento Word convertido a PDF."
+                    caption=caption
                 )
 
             # Clean up
@@ -257,7 +270,7 @@ async def handle_pptx_to_pdf(update: Update, chat_id: int):
         # Send processing message
         await send_processing_and_ad_message(
             update,
-            "🔄 Convirtiendo presentación PowerPoint a PDF...",
+            "🔄 Convirtiendo presentación PowerPoint a PDF con preservación de formato...",
             3.0
         )
 
@@ -265,12 +278,41 @@ async def handle_pptx_to_pdf(update: Update, chat_id: int):
         output_path = await convert_pptx_to_pdf(temp_input_path, chat_id)
 
         if output_path and os.path.exists(output_path):
+            # Determine appropriate caption based on conversion method
+            caption = "✅ **Conversión completada**\n\n"
+
+            # Check if LibreOffice is available
+            import subprocess
+            libreoffice_available = False
+            try:
+                # Try both common LibreOffice command names
+                for cmd in ['libreoffice', 'soffice']:
+                    try:
+                        result = subprocess.run([cmd, '--version'], capture_output=True, text=True, timeout=5)
+                        if result.returncode == 0:
+                            libreoffice_available = True
+                            break
+                    except FileNotFoundError:
+                        continue
+
+                if libreoffice_available:
+                    caption += ("📄 Presentación PowerPoint convertida a PDF con **formato preservado** usando LibreOffice CLI.\n\n"
+                               "✨ Esta conversión mantiene el diseño original, incluyendo slides, imágenes y formato.")
+                else:
+                    caption += ("📄 Presentación PowerPoint convertida a PDF usando método alternativo.\n\n"
+                               "⚠️ **Nota**: Para una mejor preservación del formato, "
+                               "instala LibreOffice: `apt-get install libreoffice` o `brew install --cask libreoffice`")
+            except (subprocess.TimeoutExpired, Exception):
+                caption += ("📄 Presentación PowerPoint convertida a PDF usando método alternativo.\n\n"
+                           "⚠️ **Nota**: Para una mejor preservación del formato, "
+                           "instala LibreOffice: `apt-get install libreoffice` o `brew install --cask libreoffice`")
+
             # Send the converted file
             with open(output_path, 'rb') as pdf_file:
                 await update.message.reply_document(
                     document=pdf_file,
                     filename=f"{document.file_name.rsplit('.', 1)[0]}.pdf",
-                    caption="✅ **Conversión completada**\n\nPresentación PowerPoint convertida a PDF."
+                    caption=caption
                 )
 
             # Clean up

@@ -7,37 +7,58 @@ import subprocess
 import platform
 
 async def convert_docx_to_pdf(docx_path: str, chat_id: int) -> str:
-    """Convert DOCX file to PDF"""
+    """Convert DOCX file to PDF with formatting preservation"""
     try:
         temp_dir = tempfile.gettempdir()
         output_path = os.path.join(temp_dir, f"docx_to_pdf_{chat_id}.pdf")
 
-        # Try different methods based on platform
-        if platform.system() == "Windows":
-            # Use docx2pdf library for Windows
+        # Try docx2pdf first for best formatting preservation
+        try:
             from docx2pdf import convert
+
+            # Convert using docx2pdf
             convert(docx_path, output_path)
-        else:
-            # Use LibreOffice for Linux/Mac
-            try:
-                subprocess.run([
-                    'libreoffice', '--headless', '--convert-to', 'pdf',
-                    '--outdir', temp_dir, docx_path
-                ], check=True, capture_output=True)
 
-                # LibreOffice creates file with same name but .pdf extension
-                base_name = os.path.splitext(os.path.basename(docx_path))[0]
-                libreoffice_output = os.path.join(temp_dir, f"{base_name}.pdf")
+            if os.path.exists(output_path):
+                print(f"Successfully converted using docx2pdf: {docx_path}")
+                return output_path
 
-                if os.path.exists(libreoffice_output):
-                    os.rename(libreoffice_output, output_path)
-                else:
-                    return None
-            except (subprocess.CalledProcessError, FileNotFoundError):
-                # Fallback: try using python-docx to extract text and create simple PDF
-                return await _create_simple_pdf_from_docx(docx_path, chat_id)
+        except ImportError:
+            print("docx2pdf not available, falling back to alternative methods")
+        except Exception as e:
+            print(f"docx2pdf conversion failed: {e}, falling back to alternative methods")
 
-        return output_path if os.path.exists(output_path) else None
+        # Fallback to LibreOffice for Linux/Mac
+        try:
+            # Try both LibreOffice command names
+            libreoffice_commands = ['libreoffice', 'soffice']
+            for cmd in libreoffice_commands:
+                try:
+                    subprocess.run([
+                        cmd, '--headless', '--convert-to', 'pdf',
+                        '--outdir', temp_dir, docx_path
+                    ], check=True, capture_output=True)
+
+                    # LibreOffice creates file with same name but .pdf extension
+                    base_name = os.path.splitext(os.path.basename(docx_path))[0]
+                    libreoffice_output = os.path.join(temp_dir, f"{base_name}.pdf")
+
+                    if os.path.exists(libreoffice_output):
+                        os.rename(libreoffice_output, output_path)
+                        print(f"Successfully converted using {cmd}: {docx_path}")
+                        return output_path
+                except FileNotFoundError:
+                    continue  # Try next command
+                except subprocess.CalledProcessError:
+                    continue  # Try next command
+
+        except Exception as e:
+            print(f"LibreOffice conversion failed: {e}")
+
+        # Final fallback: create simple PDF from text
+        print("Using text extraction fallback method")
+        return await _create_simple_pdf_from_docx(docx_path, chat_id)
+
     except Exception as e:
         print(f"Error converting DOCX to PDF: {e}")
         return None
@@ -86,6 +107,7 @@ async def _create_simple_pdf_from_docx(docx_path: str, chat_id: int) -> str:
                 y_position -= 20
 
         c.save()
+        print(f"Created simple text-based PDF: {output_path}")
         return output_path
     except Exception as e:
         print(f"Error creating simple PDF from DOCX: {e}")
@@ -155,16 +177,57 @@ async def convert_excel_to_csv(excel_path: str, chat_id: int) -> str:
         return None
 
 async def convert_pptx_to_pdf(pptx_path: str, chat_id: int) -> str:
-    """Convert PowerPoint file to PDF"""
+    """Convert PowerPoint file to PDF with formatting preservation using LibreOffice CLI"""
     try:
         temp_dir = tempfile.gettempdir()
         output_path = os.path.join(temp_dir, f"pptx_to_pdf_{chat_id}.pdf")
 
-        # Try different methods based on platform
+        # Try LibreOffice CLI first (cross-platform, best formatting preservation)
+        # Try both command names: 'libreoffice' and 'soffice'
+        libreoffice_commands = ['libreoffice', 'soffice']
+        libreoffice_success = False
+
+        for cmd in libreoffice_commands:
+            try:
+                # Use LibreOffice headless mode for conversion
+                result = subprocess.run([
+                    cmd, '--headless', '--convert-to', 'pdf',
+                    '--outdir', temp_dir, pptx_path
+                ], check=True, capture_output=True, text=True, timeout=60)
+
+                # LibreOffice creates file with same name but .pdf extension
+                base_name = os.path.splitext(os.path.basename(pptx_path))[0]
+                libreoffice_output = os.path.join(temp_dir, f"{base_name}.pdf")
+
+                if os.path.exists(libreoffice_output):
+                    # Rename to our desired output path
+                    if libreoffice_output != output_path:
+                        os.rename(libreoffice_output, output_path)
+                    print(f"Successfully converted using {cmd} CLI: {pptx_path}")
+                    libreoffice_success = True
+                    break
+                else:
+                    print(f"{cmd} conversion completed but output file not found")
+
+            except subprocess.TimeoutExpired:
+                print(f"{cmd} conversion timed out (60s limit)")
+            except subprocess.CalledProcessError as e:
+                print(f"{cmd} conversion failed with exit code {e.returncode}: {e.stderr}")
+            except FileNotFoundError:
+                print(f"{cmd} not found in PATH")
+                continue  # Try next command
+            except Exception as e:
+                print(f"{cmd} conversion failed: {e}")
+
+        if libreoffice_success:
+            return output_path
+
+        # Fallback for Windows: try comtypes (Windows only)
         if platform.system() == "Windows":
-            # Use comtypes for Windows
             try:
                 import comtypes.client
+                print("Trying Windows PowerPoint COM interface...")
+
                 powerpoint = comtypes.client.CreateObject("Powerpoint.Application")
                 powerpoint.Visible = 1
 
@@ -172,29 +235,20 @@ async def convert_pptx_to_pdf(pptx_path: str, chat_id: int) -> str:
                 presentation.SaveAs(os.path.abspath(output_path), 32)  # 32 = PDF format
                 presentation.Close()
                 powerpoint.Quit()
-            except:
-                return await _create_simple_pdf_from_pptx(pptx_path, chat_id)
-        else:
-            # Use LibreOffice for Linux/Mac
-            try:
-                subprocess.run([
-                    'libreoffice', '--headless', '--convert-to', 'pdf',
-                    '--outdir', temp_dir, pptx_path
-                ], check=True, capture_output=True)
 
-                # LibreOffice creates file with same name but .pdf extension
-                base_name = os.path.splitext(os.path.basename(pptx_path))[0]
-                libreoffice_output = os.path.join(temp_dir, f"{base_name}.pdf")
+                if os.path.exists(output_path):
+                    print(f"Successfully converted using Windows PowerPoint COM: {pptx_path}")
+                    return output_path
 
-                if os.path.exists(libreoffice_output):
-                    os.rename(libreoffice_output, output_path)
-                else:
-                    return None
-            except (subprocess.CalledProcessError, FileNotFoundError):
-                # Fallback: create simple PDF from presentation text
-                return await _create_simple_pdf_from_pptx(pptx_path, chat_id)
+            except ImportError:
+                print("comtypes not available for Windows PowerPoint conversion")
+            except Exception as e:
+                print(f"Windows PowerPoint COM conversion failed: {e}")
 
-        return output_path if os.path.exists(output_path) else None
+        # Final fallback: create simple PDF from presentation text
+        print("Using text extraction fallback method for PowerPoint")
+        return await _create_simple_pdf_from_pptx(pptx_path, chat_id)
+
     except Exception as e:
         print(f"Error converting PPTX to PDF: {e}")
         return None
@@ -204,6 +258,7 @@ async def _create_simple_pdf_from_pptx(pptx_path: str, chat_id: int) -> str:
     try:
         from reportlab.pdfgen import canvas
         from reportlab.lib.pagesizes import letter
+        from reportlab.lib.units import inch
 
         temp_dir = tempfile.gettempdir()
         output_path = os.path.join(temp_dir, f"pptx_to_pdf_simple_{chat_id}.pdf")
@@ -212,51 +267,86 @@ async def _create_simple_pdf_from_pptx(pptx_path: str, chat_id: int) -> str:
         prs = Presentation(pptx_path)
         slides_content = []
 
-        for slide in prs.slides:
+        for slide_num, slide in enumerate(prs.slides, 1):
             slide_text = []
             for shape in slide.shapes:
                 if hasattr(shape, "text") and shape.text.strip():
                     slide_text.append(shape.text.strip())
-            if slide_text:
-                slides_content.append('\n'.join(slide_text))
 
-        # Create PDF
+            if slide_text:
+                slides_content.append({
+                    'number': slide_num,
+                    'content': '\n'.join(slide_text)
+                })
+            else:
+                slides_content.append({
+                    'number': slide_num,
+                    'content': f"[Slide {slide_num} - No extractable text content]"
+                })
+
+        if not slides_content:
+            slides_content.append({
+                'number': 1,
+                'content': "[No slides or content found in presentation]"
+            })
+
+        # Create PDF with better formatting
         c = canvas.Canvas(output_path, pagesize=letter)
         width, height = letter
+        margin = 0.75 * inch
 
-        for i, slide_content in enumerate(slides_content):
+        for i, slide_data in enumerate(slides_content):
             if i > 0:
                 c.showPage()
 
-            y_position = height - 50
-            c.drawString(50, y_position, f"Slide {i + 1}")
+            # Title for each slide
+            y_position = height - margin
+            c.setFont("Helvetica-Bold", 16)
+            title = f"Slide {slide_data['number']}"
+            c.drawString(margin, y_position, title)
             y_position -= 30
 
-            lines = slide_content.split('\n')
-            for line in lines:
-                if y_position < 50:
-                    c.showPage()
-                    y_position = height - 50
+            # Draw a line under the title
+            c.setLineWidth(1)
+            c.line(margin, y_position, width - margin, y_position)
+            y_position -= 20
 
-                # Wrap long lines
+            # Content
+            c.setFont("Helvetica", 12)
+            lines = slide_data['content'].split('\n')
+
+            for line in lines:
+                if y_position < margin + 50:  # Near bottom of page
+                    c.showPage()
+                    y_position = height - margin
+
+                # Handle long lines by wrapping
                 words = line.split()
                 current_line = ""
+                max_width = width - (2 * margin)
+
                 for word in words:
                     test_line = f"{current_line} {word}".strip()
-                    if len(test_line) * 6 < width - 100:
+                    # Rough estimation: 6 points per character
+                    if len(test_line) * 6 < max_width:
                         current_line = test_line
                     else:
                         if current_line:
-                            c.drawString(50, y_position, current_line)
+                            c.drawString(margin, y_position, current_line)
                             y_position -= 15
                         current_line = word
 
                 if current_line:
-                    c.drawString(50, y_position, current_line)
+                    c.drawString(margin, y_position, current_line)
                     y_position -= 15
 
+                # Extra space between text blocks
+                y_position -= 5
+
         c.save()
+        print(f"Created simple text-based PDF from PowerPoint: {output_path}")
         return output_path
+
     except Exception as e:
         print(f"Error creating simple PDF from PPTX: {e}")
         return None
